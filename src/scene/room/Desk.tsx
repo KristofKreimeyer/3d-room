@@ -16,7 +16,7 @@ export function Desk() {
   const top = height + 0.02
 
   return (
-    <group position={[x, 0, z]}>
+    <group position={[x, 0, z]} rotation-y={Math.PI / 2}>
       <RoundedBox args={[width, 0.04, depth]} radius={0.015} position-y={height} castShadow receiveShadow>
         <meshStandardMaterial map={wood} roughness={0.55} />
       </RoundedBox>
