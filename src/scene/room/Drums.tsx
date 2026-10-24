@@ -95,10 +95,6 @@ function Drum({ radius, depth, color = SHELL }: { radius: number; depth: number;
             <cylinderGeometry args={[radius * 0.98, radius * 0.98, 0.006, 32]} />
             <meshStandardMaterial color="#3b3b3f" roughness={0.9} />
           </mesh>
-          <mesh>
-            <torusGeometry args={[radius, 0.008, 6, 32]} />
-            <meshBasicMaterial color={NEON.cyan} toneMapped={false} />
-          </mesh>
         </group>
       ))}
     </group>

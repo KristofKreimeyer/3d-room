@@ -1,9 +1,7 @@
 import { RoundedBox } from '@react-three/drei'
-import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
-import { useMemo, useRef } from 'react'
-import type { Group } from 'three'
-import { MathUtils } from 'three'
+import { useMemo } from 'react'
 import { seeded, whiteboardTexture } from '../textures'
+import { useSpin } from '../use-spin'
 import { ModeLight } from './ModeLight'
 import { Led } from './Led'
 import { DESK, HALF_W, LOW_SHELF, SHELF, WHITEBOARD } from './layout'
@@ -234,40 +232,11 @@ function ChairModel() {
   )
 }
 
-// Ein Klick auf den Stuhl dreht ihn einmal um die eigene Achse. Bei reduzierter Bewegung bleibt er stehen.
 export function Chair() {
-  const spinner = useRef<Group>(null)
-  const target = useRef(0)
-  const invalidate = useThree((s) => s.invalidate)
-
-  useFrame((_, delta) => {
-    const g = spinner.current
-    if (!g || Math.abs(target.current - g.rotation.y) < 0.002) return
-    g.rotation.y = MathUtils.damp(g.rotation.y, target.current, 3.5, Math.min(delta, 0.05))
-    invalidate()
-  })
-
-  const onClick = (e: ThreeEvent<MouseEvent>) => {
-    if (e.delta > 4) return
-    e.stopPropagation()
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const g = spinner.current
-    if (!g) return
-    target.current = Math.max(target.current, g.rotation.y) + Math.PI * 2
-    invalidate()
-  }
-  const setCursor = (e: ThreeEvent<PointerEvent>, cursor: string) => {
-    if (e.nativeEvent.target instanceof HTMLElement) e.nativeEvent.target.style.cursor = cursor
-  }
-
+  const { ref, handlers } = useSpin()
   return (
     <group position={[DESK.x + 0.85, 0, DESK.z + 0.25]} rotation-y={Math.PI / 2 - 0.5}>
-      <group
-        ref={spinner}
-        onClick={onClick}
-        onPointerOver={(e) => setCursor(e, 'pointer')}
-        onPointerOut={(e) => setCursor(e, '')}
-      >
+      <group ref={ref} {...handlers}>
         <ChairModel />
       </group>
     </group>
