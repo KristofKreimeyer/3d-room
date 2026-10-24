@@ -9,7 +9,6 @@ await p.goto('http://localhost:5173/3d-room/?szene=prozedural'); await p.waitFor
 const b64 = await p.evaluate(async () => {
   const { GLTFExporter } = await import('/3d-room/node_modules/three/examples/jsm/exporters/GLTFExporter.js')
   const scene = window.__scene
-  const root = scene.clone? scene : scene
   const ex = new GLTFExporter()
   const buf = await ex.parseAsync(scene, { binary: true, onlyVisible: true, maxTextureSize: 1024 })
   const u8 = new Uint8Array(buf); let s=''; for (let i=0;i<u8.length;i+=0x8000) s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000)); return btoa(s)
