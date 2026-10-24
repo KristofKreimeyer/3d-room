@@ -1,5 +1,4 @@
 // Alle Inhalte der Seite an einer Stelle. Texte hier ändern, nicht in den Komponenten.
-// Einträge mit "TODO" sind Platzhalter und werden in Schritt 4 durch echte Inhalte ersetzt.
 
 export type Project = {
   title: string
@@ -59,7 +58,9 @@ export const skills: SkillGroup[] = [
 ]
 
 export const about = [
-  'TODO: Zwei, drei Absätze über dich: Werdegang, was dich antreibt, woran du gerade arbeitest.',
+  'Ich habe Informatik an der TU Dortmund studiert und das Studium nicht abgeschlossen, weil mich die Praxis früh mehr gereizt hat. Schon währenddessen bin ich bei einer E-Commerce-Agentur eingestiegen.',
+  'Von dort ging es zu einem großen IT-Dienstleister, dann zu einem Produkthersteller und kurz in den öffentlichen Dienst. Heute arbeite ich bei einer Digitalagentur.',
+  'Mich treiben sauberes Design und barrierefreie Umsetzung an: Das Internet soll für jede und jeden nutzbar sein.',
 ]
 
 export const contact = {
