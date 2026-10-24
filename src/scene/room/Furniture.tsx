@@ -2,7 +2,7 @@ import { RoundedBox } from '@react-three/drei'
 import { useMemo } from 'react'
 import { seeded, whiteboardTexture } from '../textures'
 import { Led } from './Led'
-import { DESK, HALF_W, SHELF, WHITEBOARD } from './layout'
+import { DESK, HALF_W, LOW_SHELF, SHELF, WHITEBOARD } from './layout'
 import { DARK, NEON } from './neon'
 
 // Whiteboard an der linken Wand, führt in Schritt 3 zu den Skills.
@@ -118,6 +118,67 @@ export function Shelf() {
             <meshBasicMaterial color={v.c} toneMapped={false} />
           )}
         </mesh>
+      ))}
+    </group>
+  )
+}
+
+// Zwei niedrige Regale neben dem Schreibtisch, offen, mit LED-Kante und Deko.
+export function LowShelves() {
+  const { width: lw, height: lh, depth: ld } = LOW_SHELF
+  const frame = <meshStandardMaterial color={DARK.metal} metalness={0.7} roughness={0.35} />
+  const items = useMemo(() => {
+    const rand = seeded(33)
+    return LOW_SHELF.zs.map(() =>
+      [0, 1].map(() => ({
+        kind: rand() < 0.5 ? 'cube' : 'books',
+        color: [NEON.cyan, NEON.magenta, NEON.violet][Math.floor(rand() * 3)],
+      })),
+    )
+  }, [])
+  return (
+    <group>
+      {LOW_SHELF.zs.map((z, i) => (
+        <group key={z} name={`low-shelf-${i}`} position={[-HALF_W + ld / 2 + 0.01, 0, z]} rotation-y={Math.PI / 2}>
+          {[-1, 1].map((side) => (
+            <mesh key={side} position={[side * (lw / 2 - 0.015), lh / 2, 0]} castShadow receiveShadow>
+              <boxGeometry args={[0.03, lh, ld]} />
+              {frame}
+            </mesh>
+          ))}
+          {[0.02, lh / 2, lh - 0.015].map((y) => (
+            <mesh key={y} position={[0, y, 0]} castShadow receiveShadow>
+              <boxGeometry args={[lw, 0.03, ld]} />
+              {frame}
+            </mesh>
+          ))}
+          <mesh position={[0, lh / 2, -ld / 2 + 0.005]} receiveShadow>
+            <boxGeometry args={[lw, lh, 0.01]} />
+            <meshStandardMaterial color={DARK.black} />
+          </mesh>
+          {/* LED-Kante unter der Oberseite und unter dem Mittelbrett */}
+          <Led size={[lw - 0.06, 0.01, 0.01]} position={[0, lh - 0.04, ld / 2 - 0.02]} color={i ? NEON.cyan : NEON.magenta} />
+          <Led size={[lw - 0.06, 0.01, 0.01]} position={[0, lh / 2 - 0.03, ld / 2 - 0.02]} color={i ? NEON.magenta : NEON.cyan} />
+          {/* Deko: je Fach ein leuchtender Würfel oder ein Stapel Bücher */}
+          {[0.035, lh / 2 + 0.015].map((y, row) => {
+            const item = items[i][row]
+            return item.kind === 'cube' ? (
+              <mesh key={row} position={[0.15, y + 0.07, 0]} castShadow>
+                <boxGeometry args={[0.12, 0.12, 0.12]} />
+                <meshBasicMaterial color={item.color} toneMapped={false} />
+              </mesh>
+            ) : (
+              <group key={row} position={[0.1, y, 0]}>
+                {[0, 1, 2].map((b) => (
+                  <mesh key={b} position={[0, 0.02 + b * 0.04, 0]} rotation-y={b * 0.2} castShadow>
+                    <boxGeometry args={[0.22, 0.035, 0.16]} />
+                    <meshStandardMaterial color={['#1a2540', '#2b1a40', '#12323a'][b]} roughness={0.8} />
+                  </mesh>
+                ))}
+              </group>
+            )
+          })}
+        </group>
       ))}
     </group>
   )

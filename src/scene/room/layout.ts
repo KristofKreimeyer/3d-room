@@ -19,7 +19,11 @@ export const DESK = { x: -HALF_W + 0.42, z: -1.35, width: 1.8, depth: 0.8, heigh
 
 export const WHITEBOARD = { z: -2.0, y: 1.85, w: 1.0, h: 0.8 }
 
-export const COLLAGE = { z: 0.35, y: 1.85 }
+// Zwei niedrige Regale (so hoch wie der Schreibtisch) neben dem Schreibtisch Richtung Tür,
+// darüber je ein Poster.
+export const LOW_SHELF = { zs: [0.0, 0.85], width: 0.8, height: 0.75, depth: 0.35 }
+
+export const POSTER = { y: 1.55, w: 0.62, h: 0.85 }
 
 export const SHELF = { z: -0.15, width: 1.5, height: 2.0, depth: 0.38 }
 

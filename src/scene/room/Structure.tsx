@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { collageTexture, skyTexture } from '../textures'
-import { COLLAGE, HALF_D, HALF_W, ROOM } from './layout'
+import { HALF_D, HALF_W, LOW_SHELF, POSTER, ROOM } from './layout'
 import { Led } from './Led'
 import { DARK, NEON } from './neon'
 
@@ -11,7 +11,7 @@ const { width, depth, height, wall: T, door } = ROOM
 
 // Boden, Wände, Balkontür, Vorhänge und Fotocollage: alles, was fest zum Raum gehört.
 export function Structure() {
-  const collage = useMemo(() => collageTexture(), [])
+  const posters = useMemo(() => [collageTexture(0), collageTexture(1)], [])
 
   return (
     <group>
@@ -55,17 +55,23 @@ export function Structure() {
       <BalconyDoor />
       <Balcony />
 
-      {/* Neon-Poster im schwarzen Rahmen */}
-      <group position={[-HALF_W + 0.02, COLLAGE.y, COLLAGE.z]} rotation-y={Math.PI / 2}>
-        <mesh castShadow>
-          <boxGeometry args={[0.8, 1.0, 0.03]} />
-          <meshStandardMaterial color={DARK.black} roughness={0.4} metalness={0.5} />
-        </mesh>
-        <mesh position-z={0.016}>
-          <planeGeometry args={[0.72, 0.92]} />
-          <meshBasicMaterial map={collage} toneMapped={false} />
-        </mesh>
-      </group>
+      {/* Zwei Neon-Poster im schwarzen Rahmen, je über einem niedrigen Regal */}
+      {posters.map((tex, i) => (
+        <group
+          key={i}
+          position={[-HALF_W + 0.02, POSTER.y, LOW_SHELF.zs[i]]}
+          rotation-y={Math.PI / 2}
+        >
+          <mesh castShadow>
+            <boxGeometry args={[POSTER.w + 0.06, POSTER.h + 0.06, 0.03]} />
+            <meshStandardMaterial color={DARK.black} roughness={0.4} metalness={0.5} />
+          </mesh>
+          <mesh position-z={0.016}>
+            <planeGeometry args={[POSTER.w, POSTER.h]} />
+            <meshBasicMaterial map={tex} toneMapped={false} />
+          </mesh>
+        </group>
+      ))}
     </group>
   )
 }

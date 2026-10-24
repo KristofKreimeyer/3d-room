@@ -3,7 +3,7 @@ import { Bloom, EffectComposer } from '@react-three/postprocessing'
 import { Canvas } from '@react-three/fiber'
 import { Desk } from './room/Desk'
 import { Drums } from './room/Drums'
-import { Chair, Shelf, Whiteboard } from './room/Furniture'
+import { Chair, LowShelves, Shelf, Whiteboard } from './room/Furniture'
 import { NEON } from './room/neon'
 import { Structure } from './room/Structure'
 
@@ -61,6 +61,7 @@ export default function RoomScene() {
         <Desk />
         <Whiteboard />
         <Shelf />
+        <LowShelves />
         <Drums />
         <Chair />
         <EffectComposer>

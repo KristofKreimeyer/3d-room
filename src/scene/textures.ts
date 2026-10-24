@@ -227,33 +227,59 @@ export function skyTexture() {
   return toTexture(c)
 }
 
-// Neon-Poster mit Gitter-Sonne und Querstreifen, bewusst abstrakt.
-export function collageTexture() {
+// Neon-Poster, bewusst abstrakt. Variante 0: Gitter-Sonne, Variante 1: Stadt-Skyline mit Glitch-Streifen.
+export function collageTexture(variant: 0 | 1 = 0) {
+  const rand = seeded(17)
   const [c, ctx] = canvas(288, 368)
   ctx.fillStyle = '#0b0d14'
   ctx.fillRect(0, 0, 288, 368)
-  const g = ctx.createLinearGradient(0, 40, 0, 220)
-  g.addColorStop(0, '#ffb03b')
-  g.addColorStop(1, '#ff2bd6')
-  ctx.fillStyle = g
+  if (variant === 0) {
+    const g = ctx.createLinearGradient(0, 40, 0, 220)
+    g.addColorStop(0, '#ffb03b')
+    g.addColorStop(1, '#ff2bd6')
+    ctx.fillStyle = g
+    ctx.beginPath()
+    ctx.arc(144, 150, 90, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = '#0b0d14'
+    for (let i = 0; i < 7; i++) ctx.fillRect(40, 150 + i * 14, 208, 2 + i)
+    ctx.strokeStyle = '#19e6ff'
+    ctx.lineWidth = 2
+    for (let i = 0; i <= 8; i++) {
+      ctx.beginPath()
+      ctx.moveTo(144, 250)
+      ctx.lineTo(i * 36, 368)
+      ctx.stroke()
+    }
+    for (let i = 0; i < 5; i++) {
+      ctx.beginPath()
+      ctx.moveTo(0, 262 + i * i * 6)
+      ctx.lineTo(288, 262 + i * i * 6)
+      ctx.stroke()
+    }
+    return toTexture(c)
+  }
+  // Skyline in Cyan und Violett vor magentafarbenem Mond
+  ctx.fillStyle = '#ff2bd6'
   ctx.beginPath()
-  ctx.arc(144, 150, 90, 0, Math.PI * 2)
+  ctx.arc(200, 90, 44, 0, Math.PI * 2)
   ctx.fill()
-  ctx.fillStyle = '#0b0d14'
-  for (let i = 0; i < 7; i++) ctx.fillRect(40, 150 + i * 14, 208, 2 + i)
-  ctx.strokeStyle = '#19e6ff'
-  ctx.lineWidth = 2
-  for (let i = 0; i <= 8; i++) {
-    ctx.beginPath()
-    ctx.moveTo(144, 250)
-    ctx.lineTo(i * 36, 368)
-    ctx.stroke()
+  const cols = ['#19e6ff', '#8a4dff', '#19e6ff']
+  let x = 12
+  while (x < 276) {
+    const w = 18 + rand() * 26
+    const h = 80 + rand() * 170
+    ctx.fillStyle = '#10131f'
+    ctx.fillRect(x, 330 - h, w, h)
+    ctx.strokeStyle = cols[Math.floor(rand() * cols.length)]
+    ctx.lineWidth = 2
+    ctx.strokeRect(x, 330 - h, w, h)
+    x += w + 4
   }
-  for (let i = 0; i < 5; i++) {
-    ctx.beginPath()
-    ctx.moveTo(0, 262 + i * i * 6)
-    ctx.lineTo(288, 262 + i * i * 6)
-    ctx.stroke()
-  }
+  ctx.fillStyle = '#19e6ff'
+  for (let i = 0; i < 6; i++) ctx.fillRect(rand() * 200, 20 + rand() * 280, 40 + rand() * 60, 3)
+  ctx.fillStyle = '#ff2bd6'
+  ctx.font = 'bold 22px system-ui, sans-serif'
+  ctx.fillText('NEO / 2077', 70, 355)
   return toTexture(c)
 }
