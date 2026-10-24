@@ -2,6 +2,7 @@ import { RoundedBox } from '@react-three/drei'
 import { useMemo } from 'react'
 import type { Texture } from 'three'
 import { phoneTexture, screenTexture } from '../textures'
+import { Interactive } from '../Interactive'
 import { Led } from './Led'
 import { DESK } from './layout'
 import { DARK, NEON } from './neon'
@@ -39,7 +40,9 @@ export function Desk() {
       ))}
 
       <group position-y={top}>
-        <Monitor />
+        <Interactive id="projekte">
+          <Monitor />
+        </Interactive>
         {/* Tastatur und Maus */}
         <RoundedBox args={[0.44, 0.02, 0.14]} radius={0.006} position={[0, 0.01, 0.15]} castShadow>
           <meshStandardMaterial color="#15171d" roughness={0.5} />
@@ -53,7 +56,9 @@ export function Desk() {
           <planeGeometry args={[0.9, 0.4]} />
           <meshStandardMaterial color="#0a0b10" roughness={1} />
         </mesh>
-        <Phone />
+        <Interactive id="kontakt">
+          <Phone />
+        </Interactive>
         <Mug />
         <DeskLamp />
         {/* Notizbuch und Stift */}

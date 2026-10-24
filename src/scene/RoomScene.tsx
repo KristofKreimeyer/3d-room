@@ -1,11 +1,18 @@
-import { OrbitControls } from '@react-three/drei'
-import { Bloom, EffectComposer } from '@react-three/postprocessing'
-import { Canvas } from '@react-three/fiber'
+import { CameraControls, CameraControlsImpl } from '@react-three/drei'
+import { Canvas, useThree } from '@react-three/fiber'
+import { Bloom, EffectComposer, Outline, Selection } from '@react-three/postprocessing'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { InfoPanel } from '../components/InfoPanel'
+import type { SectionId } from '../content'
 import { Desk } from './room/Desk'
 import { Drums } from './room/Drums'
 import { Chair, LowShelves, Shelf, Whiteboard } from './room/Furniture'
 import { NEON } from './room/neon'
 import { Structure } from './room/Structure'
+import { Hotspots, HotspotProjector, type HotspotRefs } from './Hotspots'
+import { Interactive } from './Interactive'
+import { InteractionContext } from './interaction-context'
+import { FOV, homeView, VIEWS } from './views'
 
 // Nachtlicht: wenig Grundhelligkeit, dazu farbiges Licht von Stadt und LEDs.
 function Lights() {
@@ -35,53 +42,102 @@ function Lights() {
   )
 }
 
-// Die Kamera steht in der Zimmertür (offene Seite bei +z) und schaut Richtung Balkon.
-// Auf schmalen Hochformat-Bildschirmen startet sie weiter weg und mit größerem Blickwinkel.
-function initialCamera() {
-  const portrait = window.innerWidth / window.innerHeight < 0.8
-  return portrait
-    ? { position: [0.3, 2.2, 5.6] as const, fov: 66 }
-    : { position: [0.8, 2.3, 4.3] as const, fov: 58 }
+const { ACTION } = CameraControlsImpl
+
+// Kamera: Drehen und Zoomen mit Grenzen, dazu sanfte Fahrten zu den Objekten.
+function CameraRig({ active }: { active: SectionId | null }) {
+  const controls = useThree((s) => s.controls) as CameraControlsImpl | null
+  const started = useRef(false)
+
+  useEffect(() => {
+    if (!controls) return
+    const view = active ? VIEWS[active] : homeView()
+    // Die erste Position wird gesetzt, ohne dass die Kamera dorthin fährt.
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const animate = started.current && !reduced
+    started.current = true
+    void controls.setLookAt(...view.position, ...view.target, animate)
+  }, [controls, active])
+
+  return (
+    <CameraControls
+      makeDefault
+      minDistance={1.2}
+      maxDistance={9}
+      minPolarAngle={0.5}
+      maxPolarAngle={Math.PI / 2.05}
+      minAzimuthAngle={-1.25}
+      maxAzimuthAngle={1.25}
+      truckSpeed={0}
+      dollySpeed={0.6}
+      smoothTime={0.3}
+      mouseButtons={{ left: ACTION.ROTATE, middle: ACTION.NONE, right: ACTION.NONE, wheel: ACTION.DOLLY }}
+      touches={{ one: ACTION.TOUCH_ROTATE, two: ACTION.TOUCH_DOLLY, three: ACTION.NONE }}
+    />
+  )
 }
 
 export default function RoomScene() {
-  const camera = initialCamera()
+  const [active, setActive] = useState<SectionId | null>(null)
+  const [hovered, setHovered] = useState<SectionId | null>(null)
+  const trigger = useRef<HTMLElement | null>(null)
+  const hotspotRefs: HotspotRefs = useRef({})
+
+  const pick = useCallback((id: SectionId) => {
+    trigger.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    setActive(id)
+  }, [])
+  const close = useCallback(() => {
+    setActive(null)
+    // Wer per Tastatur geöffnet hat, landet wieder am Hotspot.
+    if (trigger.current?.isConnected && trigger.current.classList.contains('hotspot')) trigger.current.focus()
+  }, [])
+
+  const interaction = useMemo(() => ({ hovered, setHovered, pick }), [hovered, pick])
+  const portrait = window.innerWidth / window.innerHeight < 0.8
+  const start = homeView()
+
   return (
     <div className="scene">
       <Canvas
         shadows
         frameloop="demand"
         dpr={[1, 2]}
-        camera={{ position: [...camera.position], fov: camera.fov }}
+        camera={{ position: start.position, fov: portrait ? FOV.portrait : FOV.landscape }}
         aria-label="3D-Ansicht des Arbeitszimmers"
       >
-        <color attach="background" args={['#05060a']} />
-        <Lights />
-        <Structure />
-        <Desk />
-        <Whiteboard />
-        <Shelf />
-        <LowShelves />
-        <Drums />
-        <Chair />
-        <EffectComposer>
-          <Bloom mipmapBlur intensity={0.55} luminanceThreshold={0.9} luminanceSmoothing={0.15} />
-        </EffectComposer>
-        <OrbitControls
-          target={[0, 1.1, -1]}
-          enablePan={false}
-          enableDamping
-          minDistance={2}
-          maxDistance={9}
-          minPolarAngle={0.5}
-          maxPolarAngle={Math.PI / 2.05}
-          minAzimuthAngle={-0.6}
-          maxAzimuthAngle={0.6}
-        />
+        <InteractionContext.Provider value={interaction}>
+          <color attach="background" args={['#05060a']} />
+          <Selection>
+            <Lights />
+            <Structure />
+            <Desk />
+            <Interactive id="skills">
+              <Whiteboard />
+            </Interactive>
+            <Interactive id="ueber-mich">
+              <Shelf />
+            </Interactive>
+            <LowShelves />
+            <Drums />
+            <Chair />
+            <EffectComposer autoClear={false}>
+              <Outline blur edgeStrength={6} width={600} visibleEdgeColor={0x19e6ff} hiddenEdgeColor={0x19e6ff} />
+              <Bloom mipmapBlur intensity={0.55} luminanceThreshold={0.9} luminanceSmoothing={0.15} />
+            </EffectComposer>
+          </Selection>
+          <HotspotProjector refs={hotspotRefs} />
+          <CameraRig active={active} />
+        </InteractionContext.Provider>
       </Canvas>
-      <p className="scene__hint">
-        Ziehen zum Umsehen, scrollen zum Zoomen. Klickbare Objekte folgen im nächsten Schritt.
-      </p>
+      <Hotspots refs={hotspotRefs} hovered={hovered} activeId={active} onHover={setHovered} onPick={pick} />
+      {active ? (
+        <InfoPanel id={active} onClose={close} />
+      ) : (
+        <p className="scene__hint">
+          Ziehen zum Umsehen, scrollen zum Zoomen. Tippe auf die leuchtenden Punkte oder Objekte, um Inhalte zu öffnen.
+        </p>
+      )}
     </div>
   )
 }
