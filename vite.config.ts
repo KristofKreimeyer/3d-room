@@ -6,5 +6,5 @@ export default defineConfig({
   base: '/3d-room/',
   plugins: [react()],
   // three.js ist groß, wird aber nur für die 3D-Ansicht nachgeladen.
-  build: { chunkSizeWarningLimit: 1000 },
+  build: { chunkSizeWarningLimit: 1300 },
 })

@@ -1,5 +1,4 @@
 // Alle Inhalte der Seite an einer Stelle. Texte hier ändern, nicht in den Komponenten.
-// Einträge mit "TODO" sind Platzhalter und werden in Schritt 4 durch echte Inhalte ersetzt.
 
 export type Project = {
   title: string
@@ -24,8 +23,8 @@ export const sections: { id: SectionId; label: string; object: string }[] = [
 
 export const profile = {
   name: 'Kristof Kreimeyer',
-  role: 'TODO: Rolle, z. B. Frontend-Entwickler',
-  tagline: 'TODO: Ein Satz, der zusammenfasst, was du machst und wofür man dich holt.',
+  role: 'Senior Software Engineer',
+  tagline: 'Ich baue Web-Apps mit React und Tailwind, von der Idee bis zur fertigen Seite.',
   cv: { label: 'Lebenslauf (PDF)', href: '' },
 }
 
@@ -38,33 +37,36 @@ export const projects: Project[] = [
     links: [{ label: 'Code auf GitHub', href: 'https://github.com/KristofKreimeyer/3d-room' }],
   },
   {
-    title: 'TODO: Projekt 2',
-    summary: 'TODO: Worum ging es, was war deine Rolle, was ist dabei herausgekommen?',
-    tags: ['TODO'],
-    links: [],
+    title: 'EnergyHunt',
+    summary:
+      'Eine Seite, die die besten Energy-Drink-Angebote findet und übersichtlich nebeneinanderstellt. Umgesetzt mit React und Tailwind.',
+    tags: ['React', 'Tailwind CSS'],
+    links: [{ label: 'Zur Seite', href: 'https://energyhunt.pages.dev/' }],
   },
   {
-    title: 'TODO: Projekt 3',
-    summary: 'TODO: Kurzbeschreibung.',
-    tags: ['TODO'],
-    links: [],
+    title: 'Retro-Konsole als Website',
+    summary: 'Eine Retro-Spielkonsole, die als interaktive Website im Browser läuft. Umgesetzt mit React und Tailwind.',
+    tags: ['React', 'Tailwind CSS'],
+    links: [{ label: 'Zur Seite', href: 'https://kristof-kreimeyer.de/' }],
   },
 ]
 
 export const skills: SkillGroup[] = [
-  { name: 'Frontend', items: ['TypeScript', 'React', 'Three.js', 'CSS'] },
-  { name: 'Werkzeuge', items: ['Git', 'Vite', 'TODO'] },
-  { name: 'Weitere Stärken', items: ['TODO'] },
+  { name: 'Frontend', items: ['React', 'TypeScript', 'Vue', 'HTML/CSS', 'Tailwind CSS', 'Three.js'] },
+  { name: 'Accessibility', items: ['Barrierefreiheit', 'UX/UI Thinking'] },
+  { name: 'Werkzeuge', items: ['Git / GitHub', 'Storybook', 'Agile / Scrum', 'Figma', 'Vite'] },
 ]
 
 export const about = [
-  'TODO: Zwei, drei Absätze über dich: Werdegang, was dich antreibt, woran du gerade arbeitest.',
+  'Ich habe Informatik an der TU Dortmund studiert und das Studium nicht abgeschlossen, weil mich die Praxis früh mehr gereizt hat. Schon währenddessen bin ich bei einer E-Commerce-Agentur eingestiegen.',
+  'Von dort ging es zu einem großen IT-Dienstleister, dann zu einem Produkthersteller und kurz in den öffentlichen Dienst. Heute arbeite ich bei einer Digitalagentur.',
+  'Mich treiben sauberes Design und barrierefreie Umsetzung an: Das Internet soll für jede und jeden nutzbar sein.',
 ]
 
 export const contact = {
-  email: 'TODO@example.com',
+  email: 'kontakt@kristof-kreimeyer.de',
   links: [
     { label: 'GitHub', href: 'https://github.com/KristofKreimeyer' },
-    { label: 'LinkedIn', href: '' },
+    { label: 'LinkedIn', href: 'https://www.linkedin.com/in/kristof-kreimeyer/' },
   ],
 }
