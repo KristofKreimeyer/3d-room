@@ -69,21 +69,21 @@ export function woodTexture({
   return toTexture(c, repeat)
 }
 
-// Bildschirm: Editor mit Code-Zeilen und einer Projektkachel-Vorschau.
+// Bildschirm: dunkler Editor mit Neon-Syntax und einer Projekt-Vorschau.
 export function screenTexture() {
   const rand = seeded(7)
   const [c, ctx] = canvas(512, 300)
-  ctx.fillStyle = '#1b1e26'
+  ctx.fillStyle = '#080a12'
   ctx.fillRect(0, 0, 512, 300)
-  ctx.fillStyle = '#252a35'
+  ctx.fillStyle = '#10131f'
   ctx.fillRect(0, 0, 512, 22)
-  ;['#ff6159', '#ffbd2e', '#28c941'].forEach((col, i) => {
+  ;['#ff2bd6', '#19e6ff', '#8a4dff'].forEach((col, i) => {
     ctx.fillStyle = col
     ctx.beginPath()
-    ctx.arc(14 + i * 16, 11, 5, 0, Math.PI * 2)
+    ctx.arc(14 + i * 16, 11, 4, 0, Math.PI * 2)
     ctx.fill()
   })
-  const colors = ['#c678dd', '#61afef', '#98c379', '#e5c07b', '#abb2bf']
+  const colors = ['#ff2bd6', '#19e6ff', '#8a4dff', '#ffb03b', '#8fa3c4']
   for (let i = 0; i < 16; i++) {
     let x = 20 + (i % 5 === 0 ? 0 : 18 * (1 + Math.floor(rand() * 2)))
     const y = 38 + i * 15.5
@@ -91,59 +91,67 @@ export function screenTexture() {
     for (let p = 0; p < parts; p++) {
       const w = 20 + rand() * 60
       ctx.fillStyle = colors[Math.floor(rand() * colors.length)]
-      ctx.globalAlpha = 0.85
+      ctx.globalAlpha = 0.9
       ctx.fillRect(x, y, w, 6)
       x += w + 8
     }
   }
   ctx.globalAlpha = 1
   // Vorschau-Fenster rechts
-  ctx.fillStyle = '#f6efe6'
+  ctx.fillStyle = '#0e1220'
   ctx.fillRect(320, 40, 172, 240)
-  ctx.fillStyle = '#9a5b2c'
+  ctx.strokeStyle = '#19e6ff'
+  ctx.lineWidth = 2
+  ctx.strokeRect(320, 40, 172, 240)
+  ctx.fillStyle = '#19e6ff'
   ctx.font = 'bold 22px system-ui, sans-serif'
   ctx.fillText('Projekte', 336, 72)
   for (let i = 0; i < 3; i++) {
-    ctx.fillStyle = ['#e0a46e', '#8fb3a0', '#c9a6d6'][i]
+    ctx.fillStyle = ['#ff2bd6', '#8a4dff', '#ffb03b'][i]
+    ctx.globalAlpha = 0.85
     ctx.fillRect(336, 90 + i * 60, 140, 48)
   }
+  ctx.globalAlpha = 1
   return toTexture(c)
 }
 
-// Smartphone-Sperrbildschirm.
+// Smartphone-Sperrbildschirm im Neon-Verlauf.
 export function phoneTexture() {
   const [c, ctx] = canvas(128, 256)
   const g = ctx.createLinearGradient(0, 0, 0, 256)
-  g.addColorStop(0, '#f2a65a')
-  g.addColorStop(1, '#6b3f7a')
+  g.addColorStop(0, '#ff2bd6')
+  g.addColorStop(1, '#19113a')
   ctx.fillStyle = g
   ctx.fillRect(0, 0, 128, 256)
   ctx.fillStyle = 'rgba(255,255,255,0.95)'
   ctx.font = 'bold 34px system-ui, sans-serif'
   ctx.textAlign = 'center'
-  ctx.fillText('16:20', 64, 70)
+  ctx.fillText('23:42', 64, 70)
   ctx.font = '14px system-ui, sans-serif'
   ctx.fillText('Kontakt', 64, 92)
   return toTexture(c)
 }
 
-// Whiteboard mit Überschrift, Haftnotizen und Marker-Skizzen.
+// Glas-Board: dunkel, mit Neonschrift, Mindmap und leuchtenden Notizen.
 export function whiteboardTexture() {
   const rand = seeded(3)
   const [c, ctx] = canvas(768, 460)
-  ctx.fillStyle = '#fbfbf8'
+  ctx.fillStyle = '#0b0d14'
   ctx.fillRect(0, 0, 768, 460)
+  ctx.shadowBlur = 12
+  ctx.shadowColor = '#19e6ff'
   ctx.font = 'bold 54px "Segoe Print", "Comic Sans MS", cursive'
-  ctx.fillStyle = '#2b5fa8'
+  ctx.fillStyle = '#19e6ff'
   ctx.fillText('Skills', 40, 80)
-  ctx.strokeStyle = '#2b5fa8'
+  ctx.strokeStyle = '#19e6ff'
   ctx.lineWidth = 4
   ctx.beginPath()
   ctx.moveTo(40, 96)
   ctx.quadraticCurveTo(140, 104, 220, 94)
   ctx.stroke()
   // Mindmap-Skizze
-  ctx.strokeStyle = '#333'
+  ctx.strokeStyle = '#ff2bd6'
+  ctx.shadowColor = '#ff2bd6'
   ctx.lineWidth = 3
   const cx = 230
   const cy = 280
@@ -160,74 +168,92 @@ export function whiteboardTexture() {
     ctx.arc(cx + Math.cos(a) * 165, cy + Math.sin(a) * 120, 14, 0, Math.PI * 2)
     ctx.stroke()
   }
-  // Haftnotizen
-  const notes = ['#ffe680', '#ffb3c7', '#a8e6cf', '#ffd2a1', '#b5d8ff', '#ffe680']
+  // Leuchtende Notizen
+  const notes = ['#ffb03b', '#ff2bd6', '#19e6ff', '#8a4dff', '#19e6ff', '#ffb03b']
   notes.forEach((col, i) => {
     const x = 460 + (i % 3) * 95
     const y = 70 + Math.floor(i / 3) * 110 + rand() * 12
     ctx.save()
     ctx.translate(x, y)
     ctx.rotate((rand() - 0.5) * 0.15)
+    ctx.shadowColor = col
     ctx.fillStyle = col
+    ctx.globalAlpha = 0.85
     ctx.fillRect(0, 0, 80, 80)
-    ctx.fillStyle = 'rgba(0,0,0,0.5)'
+    ctx.globalAlpha = 1
+    ctx.shadowBlur = 0
+    ctx.fillStyle = 'rgba(0,0,0,0.55)'
     for (let l = 0; l < 3; l++) ctx.fillRect(10, 18 + l * 18, 30 + rand() * 30, 4)
     ctx.restore()
   })
-  ctx.strokeStyle = '#c0392b'
-  ctx.lineWidth = 3
-  ctx.beginPath()
-  ctx.moveTo(470, 330)
-  ctx.lineTo(560, 380)
-  ctx.lineTo(650, 340)
-  ctx.lineTo(730, 400)
-  ctx.stroke()
   return toTexture(c)
 }
 
-// Blick vom Balkon: warmer Nachmittagshimmel, Baumkronen und ein Dach in der Ferne.
+// Blick vom Balkon: Nachtstadt mit Hochhäusern, Neonreklamen und leuchtenden Fenstern.
 export function skyTexture() {
   const rand = seeded(11)
   const [c, ctx] = canvas(512, 256)
   const g = ctx.createLinearGradient(0, 0, 0, 256)
-  g.addColorStop(0, '#a9c8e4')
-  g.addColorStop(1, '#f6dfb8')
+  g.addColorStop(0, '#0a0620')
+  g.addColorStop(0.55, '#3a0f5c')
+  g.addColorStop(1, '#ff2bd6')
   ctx.fillStyle = g
   ctx.fillRect(0, 0, 512, 256)
-  ctx.fillStyle = '#9b4f3c'
-  ctx.fillRect(140, 190, 240, 70)
-  const greens = ['#7fa54a', '#9cbc58', '#6a9140', '#b7cf6a', '#c9b84f']
-  for (let i = 0; i < 140; i++) {
-    ctx.fillStyle = greens[Math.floor(rand() * greens.length)]
-    ctx.globalAlpha = 0.75
-    const x = rand() * 512
-    const y = 20 + rand() * 170 + (Math.abs(x - 256) < 120 ? 20 : -20)
-    ctx.beginPath()
-    ctx.arc(x, y, 12 + rand() * 26, 0, Math.PI * 2)
-    ctx.fill()
+  const lights = ['#19e6ff', '#ff2bd6', '#ffb03b', '#e8f3ff']
+  // Zwei Reihen Hochhäuser: hinten heller, vorn dunkel
+  for (const [row, shade, minH, maxH] of [
+    [0, '#1a1034', 70, 150],
+    [1, '#080612', 40, 110],
+  ] as const) {
+    let x = -10
+    while (x < 520) {
+      const w = 22 + rand() * 38
+      const h = minH + rand() * (maxH - minH)
+      ctx.fillStyle = shade
+      ctx.fillRect(x, 256 - h, w, h)
+      for (let wy = 256 - h + 6; wy < 250; wy += 9) {
+        for (let wx = x + 4; wx < x + w - 5; wx += 8) {
+          if (rand() > 0.62) {
+            ctx.fillStyle = lights[Math.floor(rand() * lights.length)]
+            ctx.globalAlpha = row === 0 ? 0.55 : 0.9
+            ctx.fillRect(wx, wy, 3, 4)
+          }
+        }
+      }
+      ctx.globalAlpha = 1
+      x += w + 2 + rand() * 6
+    }
   }
-  ctx.globalAlpha = 1
   return toTexture(c)
 }
 
-// Fotocollage: neun Bilder in Graustufen und warmen Tönen, bewusst abstrakt.
+// Neon-Poster mit Gitter-Sonne und Querstreifen, bewusst abstrakt.
 export function collageTexture() {
-  const rand = seeded(5)
   const [c, ctx] = canvas(288, 368)
-  ctx.fillStyle = '#f7f3ec'
+  ctx.fillStyle = '#0b0d14'
   ctx.fillRect(0, 0, 288, 368)
-  const tones = ['#5b5b5b', '#8a8a8a', '#b9a58f', '#7a6a5c', '#a7b3ba', '#c9b28f']
-  for (let r = 0; r < 3; r++) {
-    for (let col = 0; col < 3; col++) {
-      const x = 16 + col * 90 + rand() * 6
-      const y = 16 + r * 116 + rand() * 6
-      ctx.fillStyle = tones[Math.floor(rand() * tones.length)]
-      ctx.fillRect(x, y, 76, 100)
-      ctx.fillStyle = 'rgba(255,255,255,0.25)'
-      ctx.beginPath()
-      ctx.arc(x + 38, y + 44, 18, 0, Math.PI * 2)
-      ctx.fill()
-    }
+  const g = ctx.createLinearGradient(0, 40, 0, 220)
+  g.addColorStop(0, '#ffb03b')
+  g.addColorStop(1, '#ff2bd6')
+  ctx.fillStyle = g
+  ctx.beginPath()
+  ctx.arc(144, 150, 90, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.fillStyle = '#0b0d14'
+  for (let i = 0; i < 7; i++) ctx.fillRect(40, 150 + i * 14, 208, 2 + i)
+  ctx.strokeStyle = '#19e6ff'
+  ctx.lineWidth = 2
+  for (let i = 0; i <= 8; i++) {
+    ctx.beginPath()
+    ctx.moveTo(144, 250)
+    ctx.lineTo(i * 36, 368)
+    ctx.stroke()
+  }
+  for (let i = 0; i < 5; i++) {
+    ctx.beginPath()
+    ctx.moveTo(0, 262 + i * i * 6)
+    ctx.lineTo(288, 262 + i * i * 6)
+    ctx.stroke()
   }
   return toTexture(c)
 }

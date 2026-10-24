@@ -1,19 +1,22 @@
 import { OrbitControls } from '@react-three/drei'
+import { Bloom, EffectComposer } from '@react-three/postprocessing'
 import { Canvas } from '@react-three/fiber'
 import { Desk } from './room/Desk'
 import { Drums } from './room/Drums'
 import { Chair, Shelf, Whiteboard } from './room/Furniture'
+import { NEON } from './room/neon'
 import { Structure } from './room/Structure'
 
+// Nachtlicht: wenig Grundhelligkeit, dazu farbiges Licht von Stadt und LEDs.
 function Lights() {
   return (
     <>
-      <hemisphereLight args={['#fff1e0', '#8a6a4f', 1.1]} />
-      {/* Abendsonne, die durch die Balkontür fällt */}
+      <hemisphereLight args={['#7a82e0', '#3a2a60', 2.6]} />
+      {/* Neonlicht der Stadt, das durch die Balkontür fällt */}
       <directionalLight
         position={[1.4, 3.6, -7]}
-        intensity={1.6}
-        color="#ffcf9a"
+        intensity={1.1}
+        color="#ff5ae0"
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-bias={-0.0005}
@@ -24,8 +27,10 @@ function Lights() {
         shadow-camera-bottom={-4}
         shadow-camera-far={14}
       />
-      {/* Weiche Aufhellung von vorn, damit keine Ecke absäuft */}
-      <directionalLight position={[1, 3.5, 6]} intensity={0.8} color="#ffe2c4" />
+      {/* Kühle Aufhellung von vorn, damit keine Ecke absäuft */}
+      <directionalLight position={[1, 3.5, 6]} intensity={1.5} color="#b4c2ff" />
+      <pointLight position={[-1.2, 1.4, 0]} intensity={1.2} distance={4.5} decay={1.6} color={NEON.cyan} />
+      <pointLight position={[1.2, 1.4, 0.5]} intensity={1.2} distance={4.5} decay={1.6} color={NEON.magenta} />
     </>
   )
 }
@@ -50,7 +55,7 @@ export default function RoomScene() {
         camera={{ position: [...camera.position], fov: camera.fov }}
         aria-label="3D-Ansicht des Arbeitszimmers"
       >
-        <color attach="background" args={['#2a211b']} />
+        <color attach="background" args={['#05060a']} />
         <Lights />
         <Structure />
         <Desk />
@@ -58,6 +63,9 @@ export default function RoomScene() {
         <Shelf />
         <Drums />
         <Chair />
+        <EffectComposer>
+          <Bloom mipmapBlur intensity={0.55} luminanceThreshold={0.9} luminanceSmoothing={0.15} />
+        </EffectComposer>
         <OrbitControls
           target={[0, 1.1, -1]}
           enablePan={false}

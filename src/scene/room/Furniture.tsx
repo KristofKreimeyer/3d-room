@@ -1,7 +1,9 @@
 import { RoundedBox } from '@react-three/drei'
 import { useMemo } from 'react'
-import { seeded, whiteboardTexture, woodTexture } from '../textures'
+import { seeded, whiteboardTexture } from '../textures'
+import { Led } from './Led'
 import { DESK, HALF_W, SHELF, WHITEBOARD } from './layout'
+import { DARK, NEON } from './neon'
 
 // Whiteboard an der linken Wand, führt in Schritt 3 zu den Skills.
 export function Whiteboard() {
@@ -10,16 +12,17 @@ export function Whiteboard() {
   return (
     <group name="whiteboard" position={[-HALF_W + 0.03, WHITEBOARD.y, WHITEBOARD.z]} rotation-y={Math.PI / 2}>
       <RoundedBox args={[w + 0.05, h + 0.05, 0.03]} radius={0.01} castShadow>
-        <meshStandardMaterial color="#b9bcc1" metalness={0.6} roughness={0.35} />
+        <meshStandardMaterial color={DARK.black} metalness={0.6} roughness={0.35} />
       </RoundedBox>
+      <Led size={[w + 0.09, h + 0.09, 0.004]} position={[0, 0, -0.018]} color={NEON.cyan} />
       <mesh position-z={0.016}>
         <planeGeometry args={[w, h]} />
-        <meshStandardMaterial map={board} roughness={0.3} />
+        <meshBasicMaterial map={board} toneMapped={false} />
       </mesh>
       {/* Ablage mit Markern */}
       <mesh position={[0, -h / 2 - 0.03, 0.04]} castShadow>
         <boxGeometry args={[w * 0.6, 0.02, 0.06]} />
-        <meshStandardMaterial color="#b9bcc1" metalness={0.6} roughness={0.35} />
+        <meshStandardMaterial color={DARK.metal} metalness={0.6} roughness={0.35} />
       </mesh>
       {['#2b5fa8', '#c0392b', '#222'].map((c, i) => (
         <mesh key={c} position={[-0.12 + i * 0.1, -h / 2 - 0.01, 0.045]} rotation-z={Math.PI / 2}>
@@ -40,10 +43,9 @@ const rowY = [0.02, 0.42, 0.82, 1.22, 1.62]
 const colW = (W - t) / cols
 
 export function Shelf() {
-  const wood = useMemo(() => woodTexture({ base: [214, 186, 146], planks: 1, seed: 8 }), [])
   const items = useMemo(() => {
     const rand = seeded(21)
-    const colors = ['#8c3b2e', '#2f4858', '#d9a441', '#5b7553', '#c8b8a2', '#6b4e71', '#a65e2e', '#33302d']
+    const colors = ['#1a2540', '#2b1a40', '#12323a', '#3a1a38', '#222633', '#0f2a3a', '#33263f', '#191c28']
     const books: { x: number; y: number; w: number; h: number; c: string }[] = []
     const boxes: { x: number; y: number; c: string }[] = []
     const vases: { x: number; y: number; c: string }[] = []
@@ -61,18 +63,18 @@ export function Shelf() {
             books.push({ x: x + w / 2, y: y + h / 2, w, h, c: colors[Math.floor(rand() * colors.length)] })
             x += w + 0.004
           }
-          if (end < x0 + colW - 0.1) vases.push({ x: x0 + colW - 0.15, y, c: '#e3d5c3' })
+          if (end < x0 + colW - 0.1) vases.push({ x: x0 + colW - 0.15, y, c: '#2a2d38' })
         } else if (kind < 0.85 || r === 0) {
-          const c1 = ['#d8c3a5', '#7d8f87', '#b5654a'][Math.floor(rand() * 3)]
+          const c1 = ['#1b1e28', '#232733', '#151821'][Math.floor(rand() * 3)]
           boxes.push({ x: x0 + colW * 0.3, y, c: c1 }, { x: x0 + colW * 0.72, y, c: c1 })
         } else {
-          vases.push({ x: x0 + colW / 2, y, c: ['#e3d5c3', '#4f7d8c', '#c9a35a'][Math.floor(rand() * 3)] })
+          vases.push({ x: x0 + colW / 2, y, c: ['#2a2d38', '#19e6ff', '#ff2bd6'][Math.floor(rand() * 3)] })
         }
       })
     }
     return { books, boxes, vases }
   }, [])
-  const board = <meshStandardMaterial map={wood} roughness={0.6} />
+  const board = <meshStandardMaterial color={DARK.metal} metalness={0.7} roughness={0.35} />
   return (
     <group name="shelf" position={[HALF_W - D / 2 - 0.01, 0, SHELF.z]} rotation-y={-Math.PI / 2}>
       <HangingPlant />
@@ -90,8 +92,12 @@ export function Shelf() {
       ))}
       <mesh position={[0, H / 2, -D / 2 + 0.005]} receiveShadow>
         <boxGeometry args={[W, H, 0.01]} />
-        <meshStandardMaterial color="#efe6d8" />
+        <meshStandardMaterial color={DARK.black} />
       </mesh>
+      {rowY.slice(1).map((y, i) => (
+        <Led key={y} size={[W - 2 * t, 0.01, 0.01]} position={[0, y - 0.01, D / 2 - 0.02]} color={i % 2 ? NEON.magenta : NEON.cyan} />
+      ))}
+      <pointLight position={[0, H / 2, D / 2 + 0.3]} intensity={1.2} distance={2.4} decay={2} color={NEON.violet} />
       {items.books.map((b, i) => (
         <mesh key={i} position={[b.x, b.y, 0.03]} castShadow>
           <boxGeometry args={[b.w, b.h, 0.24]} />
@@ -106,7 +112,11 @@ export function Shelf() {
       {items.vases.map((v, i) => (
         <mesh key={i} position={[v.x, v.y + 0.1, 0.03]} castShadow>
           <cylinderGeometry args={[0.05, 0.07, 0.2, 20]} />
-          <meshStandardMaterial color={v.c} roughness={0.5} />
+          {v.c === '#2a2d38' ? (
+            <meshStandardMaterial color={v.c} roughness={0.4} metalness={0.5} />
+          ) : (
+            <meshBasicMaterial color={v.c} toneMapped={false} />
+          )}
         </mesh>
       ))}
     </group>
@@ -115,8 +125,8 @@ export function Shelf() {
 
 // Schwarzer Mesh-Bürostuhl mit hoher Lehne, Kopfstütze und Armlehnen.
 export function Chair() {
-  const mesh = <meshStandardMaterial color="#1d1d1f" roughness={0.8} />
-  const dark = <meshStandardMaterial color="#222" roughness={0.5} metalness={0.4} />
+  const mesh = <meshStandardMaterial color="#14151a" roughness={0.8} />
+  const dark = <meshStandardMaterial color="#1c1f28" roughness={0.4} metalness={0.5} />
   return (
     <group position={[DESK.x + 0.85, 0, DESK.z + 0.25]} rotation-y={Math.PI / 2 - 0.5}>
       <RoundedBox args={[0.52, 0.09, 0.5]} radius={0.035} position-y={0.5} castShadow>
@@ -192,12 +202,12 @@ function HangingPlant() {
     <group>
       <mesh position={[0.35, H + 0.12, 0]} castShadow>
         <cylinderGeometry args={[0.13, 0.1, 0.22, 20]} />
-        <meshStandardMaterial color="#e9e2d6" roughness={0.8} />
+        <meshStandardMaterial color="#1b1e28" roughness={0.6} metalness={0.3} />
       </mesh>
       {leaves.map((l, i) => (
         <mesh key={i} position={l.p} rotation={l.r} scale={[l.s, l.s * 0.25, l.s * 1.3]} castShadow>
           <sphereGeometry args={[1, 8, 6]} />
-          <meshStandardMaterial color={i % 3 ? '#4f8a3a' : '#7aa84a'} roughness={0.6} />
+          <meshStandardMaterial color={i % 3 ? '#2f8f5a' : '#3fd07a'} roughness={0.6} />
         </mesh>
       ))}
     </group>

@@ -1,31 +1,28 @@
 import { useMemo } from 'react'
-import { collageTexture, skyTexture, woodTexture } from '../textures'
+import { collageTexture, skyTexture } from '../textures'
 import { COLLAGE, HALF_D, HALF_W, ROOM } from './layout'
+import { Led } from './Led'
+import { DARK, NEON } from './neon'
 
-const WALL = '#f3f0ea'
-const TRIM = '#e4ddd2'
-const FRAME = '#4a3326'
+const WALL = DARK.wall
+const FRAME = DARK.metal
 
 const { width, depth, height, wall: T, door } = ROOM
 
 // Boden, Wände, Balkontür, Vorhänge und Fotocollage: alles, was fest zum Raum gehört.
 export function Structure() {
-  const floor = useMemo(
-    () => woodTexture({ base: [196, 166, 128], planks: 8, seed: 1, repeat: [1.2, 2.5] }),
-    [],
-  )
   const collage = useMemo(() => collageTexture(), [])
 
   return (
     <group>
-      {/* Heller Eichen-Laminatboden, Dielen laufen zur Balkontür */}
-      <mesh rotation={[-Math.PI / 2, 0, Math.PI / 2]} receiveShadow>
-        <planeGeometry args={[depth, width]} />
-        <meshStandardMaterial map={floor} roughness={0.6} />
+      {/* Dunkler, glänzender Betonboden */}
+      <mesh rotation-x={-Math.PI / 2} receiveShadow>
+        <planeGeometry args={[width, depth]} />
+        <meshStandardMaterial color={DARK.floor} roughness={0.55} metalness={0.2} />
       </mesh>
       <mesh position={[0, -0.1 - 0.001, -T / 2]} receiveShadow>
         <boxGeometry args={[width + 2 * T, 0.2, depth + T]} />
-        <meshStandardMaterial color="#6b5440" roughness={0.9} />
+        <meshStandardMaterial color={DARK.black} roughness={0.9} />
       </mesh>
 
       {/* Linke und rechte Wand */}
@@ -37,27 +34,36 @@ export function Structure() {
       ))}
       <BackWall />
 
-      {/* Sockelleisten */}
+      {/* LED-Streifen an der Sockelleiste und unter der Decke: links cyan, rechts magenta */}
       {[-1, 1].map((side) => (
-        <mesh key={side} position={[side * (HALF_W - 0.01), 0.04, 0]}>
-          <boxGeometry args={[0.02, 0.08, depth]} />
-          <meshStandardMaterial color={TRIM} />
-        </mesh>
+        <group key={side}>
+          <Led
+            size={[0.02, 0.025, depth]}
+            position={[side * (HALF_W - 0.012), 0.03, 0]}
+            color={side < 0 ? NEON.cyan : NEON.magenta}
+          />
+          <Led
+            size={[0.02, 0.025, depth]}
+            position={[side * (HALF_W - 0.012), height - 0.04, 0]}
+            color={side < 0 ? NEON.magenta : NEON.cyan}
+          />
+        </group>
       ))}
+      {/* Senkrechte Lichtleiste links der Tür */}
+      <Led size={[0.025, height - 0.4, 0.02]} position={[door.x - door.w / 2 - 0.2, height / 2, -HALF_D + 0.02]} color={NEON.violet} />
 
       <BalconyDoor />
-      <Curtains />
       <Balcony />
 
-      {/* Fotocollage im hellen Holzrahmen */}
+      {/* Neon-Poster im schwarzen Rahmen */}
       <group position={[-HALF_W + 0.02, COLLAGE.y, COLLAGE.z]} rotation-y={Math.PI / 2}>
         <mesh castShadow>
           <boxGeometry args={[0.8, 1.0, 0.03]} />
-          <meshStandardMaterial color="#c49a6c" roughness={0.6} />
+          <meshStandardMaterial color={DARK.black} roughness={0.4} metalness={0.5} />
         </mesh>
         <mesh position-z={0.016}>
           <planeGeometry args={[0.72, 0.92]} />
-          <meshStandardMaterial map={collage} roughness={0.4} />
+          <meshBasicMaterial map={collage} toneMapped={false} />
         </mesh>
       </group>
     </group>
@@ -123,39 +129,18 @@ function BalconyDoor() {
           ))}
           <mesh position={[-side * (leafW / 2 - 0.1), 1.05, 0.06]} castShadow>
             <boxGeometry args={[0.025, 0.14, 0.03]} />
-            <meshStandardMaterial color="#c9c9c9" metalness={0.6} roughness={0.25} />
+            <meshStandardMaterial color="#8c93a3" metalness={0.8} roughness={0.25} />
           </mesh>
         </group>
       ))}
+      <Led size={[w + 0.14, 0.02, 0.02]} position={[0, h + t + 0.01, 0.06]} color={NEON.cyan} />
+      <Led size={[0.02, h, 0.02]} position={[-w / 2 - t - 0.01, h / 2, 0.06]} color={NEON.cyan} />
+      <Led size={[0.02, h, 0.02]} position={[w / 2 + t + 0.01, h / 2, 0.06]} color={NEON.cyan} />
       {/* Glas: leicht spiegelnd, fast durchsichtig */}
       <mesh position={[0, h / 2, -0.01]}>
         <planeGeometry args={[w, h]} />
-        <meshStandardMaterial color="#d8ecf5" transparent opacity={0.1} roughness={0.05} />
+        <meshStandardMaterial color="#9ad8ff" transparent opacity={0.08} roughness={0.05} />
       </mesh>
-    </group>
-  )
-}
-
-// Cremefarbene Vorhänge links und rechts der Tür, Falten aus versetzten Bahnen.
-function Curtains() {
-  const z = -HALF_D + 0.12
-  const rodY = height - 0.12
-  return (
-    <group>
-      <mesh position={[door.x, rodY, z]} rotation-z={Math.PI / 2}>
-        <cylinderGeometry args={[0.012, 0.012, door.w + 1.4, 8]} />
-        <meshStandardMaterial color="#555" metalness={0.6} roughness={0.4} />
-      </mesh>
-      {[-1, 1].map((side) => (
-        <group key={side} position={[door.x + side * (door.w / 2 + 0.28), rodY - 1.32, z]}>
-          {Array.from({ length: 6 }, (_, i) => (
-            <mesh key={i} position={[(i - 2.5) * 0.085, 0, i % 2 ? 0.035 : 0]} castShadow receiveShadow>
-              <boxGeometry args={[0.1, 2.64, 0.015]} />
-              <meshStandardMaterial color="#f1e8d6" roughness={1} />
-            </mesh>
-          ))}
-        </group>
-      ))}
     </group>
   )
 }
@@ -168,11 +153,11 @@ function Balcony() {
     <group>
       <mesh position={[door.x, -0.02, z - 0.7]} rotation-x={-Math.PI / 2} receiveShadow>
         <planeGeometry args={[4, 1.4]} />
-        <meshStandardMaterial color="#9c968c" roughness={0.9} />
+        <meshStandardMaterial color="#1a1c24" roughness={0.9} />
       </mesh>
       <mesh position={[door.x, 0.5, z - 1.35]}>
         <boxGeometry args={[4, 1, 0.03]} />
-        <meshStandardMaterial color="#8d8f92" metalness={0.4} roughness={0.6} />
+        <meshStandardMaterial color="#2a2d38" metalness={0.5} roughness={0.5} />
       </mesh>
       {/* Oberkante bleibt unter der Wandhöhe, damit der Himmel nicht über die Wand ragt */}
       <mesh position={[door.x, 1.35, z - 2.4]}>

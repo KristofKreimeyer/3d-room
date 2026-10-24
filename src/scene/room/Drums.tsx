@@ -1,8 +1,9 @@
 import { DRUMS } from './layout'
+import { NEON } from './neon'
 
 const SHELL = '#1e1e21'
-const CHROME = '#c8c8cc'
-const BRASS = '#d9b45a'
+const CHROME = '#6b7286'
+const BRASS = '#2a2d38'
 
 // Schlagzeug zwischen Regal und Balkontür. Lokal sitzt der Drummer bei +z und blickt zur Raummitte (-z).
 export function Drums() {
@@ -11,7 +12,7 @@ export function Drums() {
       {/* Drum-Teppich */}
       <mesh position={[0, 0.008, 0.15]} rotation-x={-Math.PI / 2} receiveShadow>
         <planeGeometry args={[1.8, 1.6]} />
-        <meshStandardMaterial color="#3b3433" roughness={1} />
+        <meshStandardMaterial color="#07080b" roughness={1} />
       </mesh>
 
       {/* Bassdrum, liegt auf der Seite */}
@@ -95,8 +96,8 @@ function Drum({ radius, depth, color = SHELL }: { radius: number; depth: number;
             <meshStandardMaterial color="#3b3b3f" roughness={0.9} />
           </mesh>
           <mesh>
-            <torusGeometry args={[radius, 0.01, 6, 32]} />
-            <meshStandardMaterial color={CHROME} metalness={0.5} roughness={0.3} />
+            <torusGeometry args={[radius, 0.008, 6, 32]} />
+            <meshBasicMaterial color={NEON.cyan} toneMapped={false} />
           </mesh>
         </group>
       ))}
@@ -129,7 +130,7 @@ function Cymbal({ y, radius, tilt = 0 }: { y: number; radius: number; tilt?: num
   return (
     <mesh position-y={y} rotation-x={tilt} castShadow>
       <cylinderGeometry args={[radius, radius, 0.006, 40]} />
-      <meshStandardMaterial color={BRASS} metalness={0.4} roughness={0.35} />
+      <meshStandardMaterial color={BRASS} metalness={0.8} roughness={0.3} emissive={NEON.magenta} emissiveIntensity={0.25} />
     </mesh>
   )
 }
