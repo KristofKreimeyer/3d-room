@@ -1,6 +1,7 @@
 import { CameraControls, CameraControlsImpl } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
 import { Bloom, EffectComposer, Outline, Selection } from '@react-three/postprocessing'
+import { Box3, Vector3 } from 'three'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { InfoPanel } from '../components/InfoPanel'
 import type { SectionId } from '../content'
@@ -12,7 +13,7 @@ import { Structure } from './room/Structure'
 import { Hotspots, HotspotProjector, type HotspotRefs } from './Hotspots'
 import { Interactive } from './Interactive'
 import { InteractionContext } from './interaction-context'
-import { FOV, homeView, VIEWS } from './views'
+import { CAMERA_BOUNDS, FOV, homeView, VIEWS } from './views'
 
 // Nachtlicht: wenig Grundhelligkeit, dazu farbiges Licht von Stadt und LEDs.
 function Lights() {
@@ -44,6 +45,14 @@ function Lights() {
 
 const { ACTION } = CameraControlsImpl
 
+const BOUNDS = new Box3(new Vector3(...CAMERA_BOUNDS.min), new Vector3(...CAMERA_BOUNDS.max))
+
+function confine(controls: CameraControlsImpl) {
+  controls.setBoundary(BOUNDS)
+  controls.boundaryEnclosesCamera = true
+  controls.boundaryFriction = 0
+}
+
 // Kamera: Drehen und Zoomen mit Grenzen, dazu sanfte Fahrten zu den Objekten.
 function CameraRig({ active }: { active: SectionId | null }) {
   const controls = useThree((s) => s.controls) as CameraControlsImpl | null
@@ -51,6 +60,8 @@ function CameraRig({ active }: { active: SectionId | null }) {
 
   useEffect(() => {
     if (!controls) return
+    // Weder Kamera noch Blickpunkt verlassen den Raum, auch nicht beim Zoomen oder bei Kamerafahrten.
+    confine(controls)
     const view = active ? VIEWS[active] : homeView()
     // Die erste Position wird gesetzt, ohne dass die Kamera dorthin fährt.
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -63,7 +74,7 @@ function CameraRig({ active }: { active: SectionId | null }) {
     <CameraControls
       makeDefault
       minDistance={1.2}
-      maxDistance={9}
+      maxDistance={7}
       minPolarAngle={0.5}
       maxPolarAngle={Math.PI / 2.05}
       minAzimuthAngle={-1.25}
