@@ -12,12 +12,16 @@ export function homeView(): View {
   }
 }
 
+// Grenzen für Kamera und Blickpunkt: innerhalb der Seitenwände und der Stirnwand.
+// Zur offenen Seite (Zimmertür) darf die Kamera etwas zurück, damit der Raum ins Bild passt.
+export const CAMERA_BOUNDS = { min: [-1.5, 0.4, -2.4] as Vec3, max: [1.5, 2.7, 6] as Vec3 }
+
 export const FOV = { portrait: 66, landscape: 58 }
 
 // Kamerafahrten zu den klickbaren Objekten. Jede Ansicht bleibt innerhalb der Azimut-Grenzen (±1,25 rad).
 export const VIEWS: Record<SectionId, View> = {
   projekte: { position: [0.05, 1.5, -0.4], target: [-1.45, 1.2, -1.3] },
-  skills: { position: [-0.2, 1.7, -0.7], target: [-1.55, 1.85, -2.0] },
+  skills: { position: [-0.2, 1.7, -0.7], target: [-1.5, 1.85, -2.0] },
   kontakt: { position: [0.1, 1.4, -0.9], target: [-0.98, 0.8, -1.65] },
   'ueber-mich': { position: [-0.5, 1.5, 1.0], target: [1.35, 1.0, -0.15] },
 }
