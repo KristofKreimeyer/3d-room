@@ -98,13 +98,12 @@ export default function RoomScene() {
   const start = homeView()
 
   return (
-    <div className="scene">
+    <div id="inhalt" className="scene" role="region" aria-label="3D-Ansicht des Arbeitszimmers">
       <Canvas
         shadows
         frameloop="demand"
         dpr={[1, 2]}
         camera={{ position: start.position, fov: portrait ? FOV.portrait : FOV.landscape }}
-        aria-label="3D-Ansicht des Arbeitszimmers"
       >
         <InteractionContext.Provider value={interaction}>
           <color attach="background" args={['#05060a']} />

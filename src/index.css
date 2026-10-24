@@ -218,10 +218,31 @@ a {
 }
 
 .scene__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
   padding: 2rem 1rem;
   text-align: center;
   background: var(--scene-bg);
   min-height: calc(100dvh - var(--topbar-h, 3.2rem));
+}
+
+.scene__spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: 3px solid rgba(25, 230, 255, 0.2);
+  border-top-color: #19e6ff;
+  box-shadow: 0 0 12px rgba(25, 230, 255, 0.5);
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Hotspots im 3D-Raum */
@@ -274,6 +295,10 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .scene__spinner {
+    animation-duration: 3s;
+  }
+
   .hotspot__dot::after {
     animation: none;
   }
