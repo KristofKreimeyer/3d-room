@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 import { collageTexture, skyTexture } from '../textures'
 import { useMode } from '../theme-context'
-import { HALF_D, HALF_W, LOW_SHELF, POSTER, ROOM } from './layout'
+import { DESK, HALF_D, HALF_W, LOW_SHELF, POSTER, ROOM } from './layout'
 import { Led } from './Led'
+import { ModeLight } from './ModeLight'
 import { DARK, NEON } from './neon'
 
 const WALL = DARK.wall
@@ -16,10 +17,10 @@ export function Structure() {
 
   return (
     <group>
-      {/* Dunkler, glänzender Betonboden */}
+      {/* Dunkler Holzboden */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow>
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial color={DARK.floor} roughness={0.55} metalness={0.2} />
+        <meshStandardMaterial color={DARK.floor} roughness={0.5} metalness={0.05} />
       </mesh>
       <mesh position={[0, -0.1 - 0.001, -T / 2]} receiveShadow>
         <boxGeometry args={[width + 2 * T, 0.2, depth + T]} />
@@ -35,23 +36,13 @@ export function Structure() {
       ))}
       <BackWall />
 
-      {/* LED-Streifen an der Sockelleiste und unter der Decke: links cyan, rechts magenta */}
+      {/* Warme Lichtleiste unter der Decke */}
       {[-1, 1].map((side) => (
-        <group key={side}>
-          <Led
-            size={[0.02, 0.025, depth]}
-            position={[side * (HALF_W - 0.012), 0.03, 0]}
-            color={side < 0 ? NEON.cyan : NEON.magenta}
-          />
-          <Led
-            size={[0.02, 0.025, depth]}
-            position={[side * (HALF_W - 0.012), height - 0.04, 0]}
-            color={side < 0 ? NEON.magenta : NEON.cyan}
-          />
-        </group>
+        <Led key={side} size={[0.02, 0.025, depth]} position={[side * (HALF_W - 0.012), height - 0.04, 0]} color={NEON.cyan} />
       ))}
-      {/* Senkrechte Lichtleiste links der Tür */}
-      <Led size={[0.025, height - 0.4, 0.02]} position={[door.x - door.w / 2 - 0.2, height / 2, -HALF_D + 0.02]} color={NEON.violet} />
+
+      <Ceiling />
+      <Rug />
 
       <BalconyDoor />
       <Balcony />
@@ -140,9 +131,6 @@ function BalconyDoor() {
           </mesh>
         </group>
       ))}
-      <Led size={[w + 0.14, 0.02, 0.02]} position={[0, h + t + 0.01, 0.06]} color={NEON.cyan} />
-      <Led size={[0.02, h, 0.02]} position={[-w / 2 - t - 0.01, h / 2, 0.06]} color={NEON.cyan} />
-      <Led size={[0.02, h, 0.02]} position={[w / 2 + t + 0.01, h / 2, 0.06]} color={NEON.cyan} />
       {/* Glas: leicht spiegelnd, fast durchsichtig */}
       <mesh position={[0, h / 2, -0.01]}>
         <planeGeometry args={[w, h]} />
@@ -173,5 +161,44 @@ function Balcony() {
         <meshBasicMaterial map={sky} toneMapped={false} />
       </mesh>
     </group>
+  )
+}
+
+// Decke mit Pendelleuchte. Sie wirft keinen Schatten, damit das Licht von draußen den Raum erreicht.
+function Ceiling() {
+  const lampY = height - 0.62
+  return (
+    <group>
+      <mesh position={[0, height + 0.04, -T / 2]}>
+        <boxGeometry args={[width + 2 * T, 0.08, depth + T]} />
+        <meshStandardMaterial color="#e6d7bf" roughness={0.95} />
+      </mesh>
+      <group position={[-0.25, 0, -0.9]}>
+        <mesh position-y={height - 0.3}>
+          <cylinderGeometry args={[0.006, 0.006, 0.6, 6]} />
+          <meshStandardMaterial color={DARK.black} />
+        </mesh>
+        {/* Schirm: oben geschlossene, unten offene Halbkugel */}
+        <mesh position-y={lampY + 0.04} castShadow={false}>
+          <sphereGeometry args={[0.22, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+          <meshStandardMaterial color="#f1e6d0" roughness={0.7} side={2} />
+        </mesh>
+        <mesh position-y={lampY - 0.01}>
+          <sphereGeometry args={[0.06, 16, 12]} />
+          <meshBasicMaterial color="#fff0d0" toneMapped={false} />
+        </mesh>
+        <ModeLight night={4.2} day={0.8} position={[0, lampY - 0.1, 0]} distance={7} decay={1.5} color="#ffd7a0" />
+      </group>
+    </group>
+  )
+}
+
+// Runder heller Teppich unter Schreibtischstuhl.
+function Rug() {
+  return (
+    <mesh position={[DESK.x + 0.85, 0.006, DESK.z + 0.1]} receiveShadow>
+      <cylinderGeometry args={[0.8, 0.8, 0.012, 48]} />
+      <meshStandardMaterial color="#cdbda3" roughness={1} />
+    </mesh>
   )
 }

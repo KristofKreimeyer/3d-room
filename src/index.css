@@ -1,14 +1,14 @@
 :root {
-  --bg: #0b0d14;
-  --surface: #121624;
-  --text: #c5cde3;
+  --bg: #14100d;
+  --surface: #1d1713;
+  --text: #e6d9c8;
   --text-h: #ffffff;
-  --muted: #8a94b3;
-  --border: #263049;
-  --accent: #19e6ff;
-  --accent-2: #ff2bd6;
-  --accent-contrast: #05060a;
-  --scene-bg: #05060a;
+  --muted: #b3a592;
+  --border: #3a2e26;
+  --accent: #ffbf7a;
+  --accent-2: #ff8a5c;
+  --accent-contrast: #1a1108;
+  --scene-bg: #15100d;
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
 
@@ -57,7 +57,7 @@ a {
   background: color-mix(in srgb, var(--bg) 92%, transparent);
   backdrop-filter: blur(6px);
   border-bottom: 1px solid var(--accent);
-  box-shadow: 0 1px 14px rgba(25, 230, 255, 0.35);
+  box-shadow: 0 1px 14px rgba(255, 191, 122, 0.35);
 }
 
 .topbar__name {
@@ -258,9 +258,9 @@ a {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 50%;
-  border: 3px solid rgba(25, 230, 255, 0.2);
-  border-top-color: #19e6ff;
-  box-shadow: 0 0 12px rgba(25, 230, 255, 0.5);
+  border: 3px solid rgba(255, 191, 122, 0.2);
+  border-top-color: #ffbf7a;
+  box-shadow: 0 0 12px rgba(255, 191, 122, 0.5);
   animation: spin 0.9s linear infinite;
 }
 
@@ -295,7 +295,7 @@ a {
   height: 1.1rem;
   border: 2px solid var(--accent);
   border-radius: 50%;
-  background: rgba(25, 230, 255, 0.25);
+  background: rgba(255, 191, 122, 0.25);
   box-shadow: 0 0 10px var(--accent);
 }
 
@@ -357,7 +357,7 @@ a {
   border: 1px solid var(--accent);
   border-radius: 12px;
   background: rgba(10, 12, 20, 0.92);
-  box-shadow: 0 0 24px rgba(25, 230, 255, 0.25);
+  box-shadow: 0 0 24px rgba(255, 191, 122, 0.25);
   backdrop-filter: blur(8px);
 }
 

@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import type { Texture } from 'three'
 import { phoneTexture, screenTexture } from '../textures'
 import { Interactive } from '../Interactive'
+import { ModeLight } from './ModeLight'
 import { Led } from './Led'
 import { DESK } from './layout'
 import { DARK, NEON } from './neon'
@@ -18,13 +19,13 @@ export function Desk() {
   return (
     <group position={[x, 0, z]} rotation-y={Math.PI / 2}>
       <RoundedBox args={[width, 0.04, depth]} radius={0.015} position-y={height} castShadow receiveShadow>
-        <meshStandardMaterial color="#101218" roughness={0.25} metalness={0.5} />
+        <meshStandardMaterial color="#8a6140" roughness={0.55} metalness={0.05} />
       </RoundedBox>
       {/* LED-Streifen: Unterseite der Platte (Underglow) und Vorderkante */}
       <Led size={[width - 0.1, 0.012, 0.012]} position={[0, height - 0.03, depth / 2 - 0.04]} color={NEON.magenta} />
       <Led size={[width - 0.1, 0.012, 0.012]} position={[0, height - 0.03, -depth / 2 + 0.04]} color={NEON.cyan} />
       <Led size={[width, 0.012, 0.01]} position={[0, height + 0.021, depth / 2 - 0.006]} color={NEON.cyan} />
-      <pointLight position={[0, height - 0.2, 0.2]} intensity={1.4} distance={2.2} decay={2} color={NEON.magenta} />
+      <ModeLight night={1.4} day={0.2} position={[0, height - 0.2, 0.2]} distance={2.2} color={NEON.magenta} />
       {/* Kufengestell aus Metall */}
       {[-1, 1].map((side) => (
         <group key={side} position-x={side * (width / 2 - 0.12)}>
@@ -199,13 +200,13 @@ function DeskLamp() {
       {/* Schirm, nach unten geöffnet */}
       <mesh position={[0.25, 0.42, 0]} castShadow>
         <coneGeometry args={[0.1, 0.12, 24, 1, true]} />
-        <meshStandardMaterial color="#0d0f14" side={2} roughness={0.5} />
+        <meshStandardMaterial color="#e9dcc5" side={2} roughness={0.7} />
       </mesh>
       <mesh position={[0.25, 0.38, 0]}>
         <sphereGeometry args={[0.03, 16, 12]} />
         <meshBasicMaterial color={NEON.amber} toneMapped={false} />
       </mesh>
-      <pointLight position={[0.25, 0.32, 0]} intensity={0.9} distance={1.8} decay={2} color={NEON.amber} />
+      <ModeLight night={2.4} day={0.3} position={[0.25, 0.32, 0]} distance={2.6} color={NEON.amber} />
     </group>
   )
 }
