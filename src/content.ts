@@ -63,9 +63,9 @@ export const about = [
 ]
 
 export const contact = {
-  email: 'TODO@example.com',
+  email: 'kontakt@kristof-kreimeyer.de',
   links: [
     { label: 'GitHub', href: 'https://github.com/KristofKreimeyer' },
-    { label: 'LinkedIn', href: '' },
+    { label: 'LinkedIn', href: 'https://www.linkedin.com/in/kristof-kreimeyer/' },
   ],
 }
