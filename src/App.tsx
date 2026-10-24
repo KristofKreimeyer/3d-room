@@ -36,7 +36,12 @@ export default function App() {
     <>
       <TopBar view={view} canShow3d={canShow3d} onViewChange={setView} />
       {view === '3d' ? (
-        <Suspense fallback={<p className="scene__loading">Raum wird geladen …</p>}>
+        <Suspense fallback={(
+            <div className="scene__loading" role="status">
+              <span className="scene__spinner" aria-hidden="true" />
+              Raum wird geladen …
+            </div>
+          )}>
           <RoomScene />
         </Suspense>
       ) : (

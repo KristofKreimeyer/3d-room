@@ -17,7 +17,7 @@ type Props = {
 // Info-Panel im 3D-Raum: zeigt den Inhalt des angeklickten Objekts.
 // Der Fokus springt beim Öffnen ins Panel, Escape und der Schließen-Button bringen ihn zurück.
 export function InfoPanel({ id, onClose }: Props) {
-  const ref = useRef<HTMLElement>(null)
+  const ref = useRef<HTMLDivElement>(null)
   const Section = SECTION_COMPONENTS[id]
 
   useEffect(() => {
@@ -33,11 +33,11 @@ export function InfoPanel({ id, onClose }: Props) {
   }, [onClose])
 
   return (
-    <aside ref={ref} className="panel" role="dialog" aria-labelledby={`${id}-h`} tabIndex={-1}>
+    <div ref={ref} className="panel" role="dialog" aria-labelledby={`${id}-h`} tabIndex={-1}>
       <button type="button" className="panel__close" onClick={onClose} aria-label="Schließen">
         ×
       </button>
       <Section />
-    </aside>
+    </div>
   )
 }
