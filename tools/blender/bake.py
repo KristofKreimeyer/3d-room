@@ -25,7 +25,7 @@ sky_dir = os.path.dirname(glb)
 
 # Texturgrößen je Gruppe
 SIZES = {
-    'shell': 2048, 'desk': 2048, 'shelf': 1024, 'lowshelves': 1024, 'drums': 1024,
+    'shell': 2048, 'desk': 2048, 'shelf': 2048, 'lowshelves': 1024, 'drums': 1024,
     'chair': 512, 'monitor': 1024, 'smartphone': 256, 'whiteboard': 512, 'poster0': 512, 'poster1': 512,
 }
 
@@ -139,7 +139,7 @@ sc.render.image_settings.quality = 92
 
 
 def bake_all(mode):
-    sc.view_settings.exposure = 0.6 if mode == 'night' else 0.9
+    sc.view_settings.exposure = 0.6 if mode == 'night' else 0.55
     for grp in only:
         obj = joined.get(grp)
         if not obj or grp in EMIT:
@@ -149,7 +149,7 @@ def bake_all(mode):
         bpy.ops.object.select_all(action='DESELECT')
         obj.select_set(True)
         bpy.context.view_layer.objects.active = obj
-        bpy.ops.object.bake(type='COMBINED', margin=8, use_clear=True)
+        bpy.ops.object.bake(type='COMBINED', margin=24, margin_type='EXTEND', use_clear=True)
         path = os.path.join(out_dir, f'{grp}_{mode}.jpg')
         images[(grp, mode)].save_render(path, scene=sc)
         print('gebacken', grp, mode, path, flush=True)
@@ -164,8 +164,8 @@ bake_all('night')
 clear_lights()
 apply_emission(registry, DAY)
 set_sky_image(registry, sky['day'])
-set_world((0.7, 0.8, 1.0), 1.6)
-add_sun((1.4, 7, 3.6), (1.0, 0.93, 0.8), 9, 2)
+set_world((0.7, 0.8, 1.0), 1.3)
+add_sun((1.4, 7, 3.6), (1.0, 0.93, 0.8), 8, 2)
 bake_all('day')
 
 # Geometrie ohne Materialien exportieren (Texturen kommen aus den JPGs)

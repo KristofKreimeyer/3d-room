@@ -19,8 +19,8 @@ npm install && npx playwright install chromium                      # nur für d
 2. **Backen.** `python tools/blender/bake.py -- room_raw.glb out 256`
    - Gruppen (`shell`, `desk`, `shelf`, `chair`, ...) werden zu je einem Mesh vereint und UV-entfaltet.
    - Lampen, Leisten und Bildschirme werden zu Lichtquellen; Nacht: Pendelleuchte und Schreibtischlampe, Tag: Sonne durch die Balkontür.
-   - Ausgabe: `room.glb` (nur Geometrie und UVs) sowie `<gruppe>_night.jpg` und `<gruppe>_day.jpg`.
+   - Ausgabe: `room.glb` (nur Geometrie und UVs), `images.glb` (Bildschirme, Whiteboard, Himmel mit Originalbildern) sowie `<gruppe>_night.jpg` und `<gruppe>_day.jpg`.
 3. **Entrauschen.** `python tools/blender/denoise.py -- out`
-4. **Einbinden.** `out/*` nach `public/room/` kopieren.
+4. **Einbinden.** `out/*` und `sky_night.png`, `sky_day.png` nach `public/room/` kopieren.
 
 `preview.py` rendert ein Vorschaubild aus der Startansicht (nützlich zum Abstimmen von Lichtstärken in `common.py`).
