@@ -24,8 +24,8 @@ export const sections: { id: SectionId; label: string; object: string }[] = [
 
 export const profile = {
   name: 'Kristof Kreimeyer',
-  role: 'TODO: Rolle, z. B. Frontend-Entwickler',
-  tagline: 'TODO: Ein Satz, der zusammenfasst, was du machst und wofür man dich holt.',
+  role: 'Senior Software Engineer',
+  tagline: 'Ich baue Web-Apps mit React und Tailwind, von der Idee bis zur fertigen Seite.',
   cv: { label: 'Lebenslauf (PDF)', href: '' },
 }
 
@@ -38,21 +38,22 @@ export const projects: Project[] = [
     links: [{ label: 'Code auf GitHub', href: 'https://github.com/KristofKreimeyer/3d-room' }],
   },
   {
-    title: 'TODO: Projekt 2',
-    summary: 'TODO: Worum ging es, was war deine Rolle, was ist dabei herausgekommen?',
-    tags: ['TODO'],
-    links: [],
+    title: 'EnergyHunt',
+    summary:
+      'Eine Seite, die die besten Energy-Drink-Angebote findet und übersichtlich nebeneinanderstellt. Umgesetzt mit React und Tailwind.',
+    tags: ['React', 'Tailwind CSS'],
+    links: [], // TODO: Link zur Seite oder zum Code
   },
   {
-    title: 'TODO: Projekt 3',
-    summary: 'TODO: Kurzbeschreibung.',
-    tags: ['TODO'],
-    links: [],
+    title: 'Retro-Konsole als Website',
+    summary: 'Eine Retro-Spielkonsole, die als interaktive Website im Browser läuft. Umgesetzt mit React und Tailwind.',
+    tags: ['React', 'Tailwind CSS'],
+    links: [], // TODO: Link zur Seite oder zum Code
   },
 ]
 
 export const skills: SkillGroup[] = [
-  { name: 'Frontend', items: ['TypeScript', 'React', 'Three.js', 'CSS'] },
+  { name: 'Frontend', items: ['React', 'Tailwind CSS', 'TypeScript', 'Three.js'] },
   { name: 'Werkzeuge', items: ['Git', 'Vite', 'TODO'] },
   { name: 'Weitere Stärken', items: ['TODO'] },
 ]
