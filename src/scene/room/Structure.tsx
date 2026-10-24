@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { collageTexture, skyTexture } from '../textures'
+import { useMode } from '../theme-context'
 import { HALF_D, HALF_W, LOW_SHELF, POSTER, ROOM } from './layout'
 import { Led } from './Led'
 import { DARK, NEON } from './neon'
@@ -153,7 +154,8 @@ function BalconyDoor() {
 
 // Was man durch die Balkontür sieht: Balkonboden, Lochblech-Brüstung, Bäume.
 function Balcony() {
-  const sky = useMemo(() => skyTexture(), [])
+  const skies = useMemo(() => ({ nacht: skyTexture(), tag: skyTexture(true) }), [])
+  const sky = skies[useMode()]
   const z = -HALF_D - T
   return (
     <group>

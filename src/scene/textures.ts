@@ -190,7 +190,8 @@ export function whiteboardTexture() {
 }
 
 // Blick vom Balkon: Nachtstadt mit Hochhäusern, Neonreklamen und leuchtenden Fenstern.
-export function skyTexture() {
+export function skyTexture(day = false) {
+  if (day) return daySkyTexture()
   const rand = seeded(11)
   const [c, ctx] = canvas(512, 256)
   const g = ctx.createLinearGradient(0, 0, 0, 256)
@@ -221,6 +222,38 @@ export function skyTexture() {
         }
       }
       ctx.globalAlpha = 1
+      x += w + 2 + rand() * 6
+    }
+  }
+  return toTexture(c)
+}
+
+// Tageshimmel: helle Stadt mit wenigen beleuchteten Fenstern.
+function daySkyTexture() {
+  const rand = seeded(11)
+  const [c, ctx] = canvas(512, 256)
+  const g = ctx.createLinearGradient(0, 0, 0, 256)
+  g.addColorStop(0, '#6fb4f0')
+  g.addColorStop(0.7, '#cfe8fa')
+  g.addColorStop(1, '#ffe9c9')
+  ctx.fillStyle = g
+  ctx.fillRect(0, 0, 512, 256)
+  for (const [shade, minH, maxH] of [
+    ['#a9b6cc', 70, 150],
+    ['#7b88a3', 40, 110],
+  ] as const) {
+    let x = -10
+    while (x < 520) {
+      const w = 22 + rand() * 38
+      const h = minH + rand() * (maxH - minH)
+      ctx.fillStyle = shade
+      ctx.fillRect(x, 256 - h, w, h)
+      ctx.fillStyle = 'rgba(255,255,255,0.35)'
+      for (let wy = 256 - h + 6; wy < 250; wy += 9) {
+        for (let wx = x + 4; wx < x + w - 5; wx += 8) {
+          if (rand() > 0.7) ctx.fillRect(wx, wy, 3, 4)
+        }
+      }
       x += w + 2 + rand() * 6
     }
   }
