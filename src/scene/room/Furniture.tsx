@@ -4,6 +4,7 @@ import { useMemo, useRef } from 'react'
 import type { Group } from 'three'
 import { MathUtils } from 'three'
 import { seeded, whiteboardTexture } from '../textures'
+import { ModeLight } from './ModeLight'
 import { Led } from './Led'
 import { DESK, HALF_W, LOW_SHELF, SHELF, WHITEBOARD } from './layout'
 import { DARK, NEON } from './neon'
@@ -100,7 +101,7 @@ export function Shelf() {
       {rowY.slice(1).map((y, i) => (
         <Led key={y} size={[W - 2 * t, 0.01, 0.01]} position={[0, y - 0.01, D / 2 - 0.02]} color={i % 2 ? NEON.magenta : NEON.cyan} />
       ))}
-      <pointLight position={[0, H / 2, D / 2 + 0.3]} intensity={1.2} distance={2.4} decay={2} color={NEON.violet} />
+      <ModeLight night={1.0} day={0.2} position={[0, H / 2, D / 2 + 0.3]} distance={2.4} color={NEON.violet} />
       {items.books.map((b, i) => (
         <mesh key={i} position={[b.x, b.y, 0.03]} castShadow>
           <boxGeometry args={[b.w, b.h, 0.24]} />

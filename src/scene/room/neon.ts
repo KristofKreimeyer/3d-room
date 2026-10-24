@@ -1,16 +1,17 @@
-// Gemeinsame Neonfarben der Cyberpunk-Szene.
+// Warme Lichtfarben der Szene (Lampen, Leisten, Akzente).
+// Die Namen stammen aus der früheren Neon-Variante und bleiben, damit alle Bauteile dieselbe Palette nutzen.
 export const NEON = {
-  cyan: '#19e6ff',
-  magenta: '#ff2bd6',
-  violet: '#8a4dff',
-  amber: '#ffb03b',
+  cyan: '#ffe2b8', // warmweiß
+  magenta: '#ffa45e', // Bernstein
+  violet: '#ffbf8f', // Pfirsich
+  amber: '#ffb347',
 }
 
-// Dunkle Grundfarben: fast schwarz mit leichtem Blaustich.
+// Materialfarben: helle warme Wände, dunkler Nussbaumboden, dunkle Metallteile.
 export const DARK = {
-  wall: '#4a5169',
-  wallLight: '#353b4e',
-  floor: '#2a2f40',
-  metal: '#3a4054',
-  black: '#0a0b0f',
+  wall: '#d8c3a5',
+  wallLight: '#c4ae90',
+  floor: '#3a271d',
+  metal: '#5b4333',
+  black: '#3a281d',
 }

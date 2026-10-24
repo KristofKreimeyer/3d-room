@@ -195,16 +195,16 @@ export function skyTexture(day = false) {
   const rand = seeded(11)
   const [c, ctx] = canvas(512, 256)
   const g = ctx.createLinearGradient(0, 0, 0, 256)
-  g.addColorStop(0, '#0a0620')
-  g.addColorStop(0.55, '#3a0f5c')
-  g.addColorStop(1, '#ff2bd6')
+  g.addColorStop(0, '#141a38')
+  g.addColorStop(0.6, '#3b3a68')
+  g.addColorStop(1, '#e58a5b')
   ctx.fillStyle = g
   ctx.fillRect(0, 0, 512, 256)
-  const lights = ['#19e6ff', '#ff2bd6', '#ffb03b', '#e8f3ff']
+  const lights = ['#ffd08a', '#ffb347', '#ffe9c4', '#ffc27a']
   // Zwei Reihen Hochhäuser: hinten heller, vorn dunkel
   for (const [row, shade, minH, maxH] of [
-    [0, '#1a1034', 70, 150],
-    [1, '#080612', 40, 110],
+    [0, '#2a2a4c', 70, 150],
+    [1, '#14122a', 40, 110],
   ] as const) {
     let x = -10
     while (x < 520) {
@@ -264,19 +264,19 @@ function daySkyTexture() {
 export function collageTexture(variant: 0 | 1 = 0) {
   const rand = seeded(17)
   const [c, ctx] = canvas(288, 368)
-  ctx.fillStyle = '#0b0d14'
+  ctx.fillStyle = '#2a1f1a'
   ctx.fillRect(0, 0, 288, 368)
   if (variant === 0) {
     const g = ctx.createLinearGradient(0, 40, 0, 220)
-    g.addColorStop(0, '#ffb03b')
-    g.addColorStop(1, '#ff2bd6')
+    g.addColorStop(0, '#f4c27a')
+    g.addColorStop(1, '#d9694a')
     ctx.fillStyle = g
     ctx.beginPath()
     ctx.arc(144, 150, 90, 0, Math.PI * 2)
     ctx.fill()
-    ctx.fillStyle = '#0b0d14'
+    ctx.fillStyle = '#2a1f1a'
     for (let i = 0; i < 7; i++) ctx.fillRect(40, 150 + i * 14, 208, 2 + i)
-    ctx.strokeStyle = '#19e6ff'
+    ctx.strokeStyle = '#e8d3b0'
     ctx.lineWidth = 2
     for (let i = 0; i <= 8; i++) {
       ctx.beginPath()
@@ -292,27 +292,27 @@ export function collageTexture(variant: 0 | 1 = 0) {
     }
     return toTexture(c)
   }
-  // Skyline in Cyan und Violett vor magentafarbenem Mond
-  ctx.fillStyle = '#ff2bd6'
+  // Skyline in Sand und Terrakotta vor großem Mond
+  ctx.fillStyle = '#f0c27b'
   ctx.beginPath()
   ctx.arc(200, 90, 44, 0, Math.PI * 2)
   ctx.fill()
-  const cols = ['#19e6ff', '#8a4dff', '#19e6ff']
+  const cols = ['#e8d3b0', '#d9694a', '#e8d3b0']
   let x = 12
   while (x < 276) {
     const w = 18 + rand() * 26
     const h = 80 + rand() * 170
-    ctx.fillStyle = '#10131f'
+    ctx.fillStyle = '#3a2a22'
     ctx.fillRect(x, 330 - h, w, h)
     ctx.strokeStyle = cols[Math.floor(rand() * cols.length)]
     ctx.lineWidth = 2
     ctx.strokeRect(x, 330 - h, w, h)
     x += w + 4
   }
-  ctx.fillStyle = '#19e6ff'
+  ctx.fillStyle = '#e8d3b0'
   for (let i = 0; i < 6; i++) ctx.fillRect(rand() * 200, 20 + rand() * 280, 40 + rand() * 60, 3)
-  ctx.fillStyle = '#ff2bd6'
+  ctx.fillStyle = '#d9694a'
   ctx.font = 'bold 22px system-ui, sans-serif'
-  ctx.fillText('NEO / 2077', 70, 355)
+  ctx.fillText('STUDIO / 24', 70, 355)
   return toTexture(c)
 }
