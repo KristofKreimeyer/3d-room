@@ -1,8 +1,9 @@
 import { CameraControls, CameraControlsImpl } from '@react-three/drei'
-import { Canvas, useThree } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Bloom, EffectComposer, Outline, Selection } from '@react-three/postprocessing'
-import { Box3, Vector3 } from 'three'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { BloomEffect } from 'postprocessing'
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react'
+import { Box3, Color, MathUtils, Vector3, type DirectionalLight, type HemisphereLight, type PointLight } from 'three'
 import { InfoPanel } from '../components/InfoPanel'
 import type { SectionId } from '../content'
 import { Desk } from './room/Desk'
@@ -13,17 +14,71 @@ import { Structure } from './room/Structure'
 import { Hotspots, HotspotProjector, type HotspotRefs } from './Hotspots'
 import { Interactive } from './Interactive'
 import { InteractionContext } from './interaction-context'
+import { ThemeContext, type Mode } from './theme-context'
 import { CAMERA_BOUNDS, FOV, homeView, VIEWS } from './views'
 
-// Nachtlicht: wenig Grundhelligkeit, dazu farbiges Licht von Stadt und LEDs.
-function Lights() {
+type LightSet = { hemi: number; sun: number; fill: number; point: number; bloom: number }
+const NIGHT: LightSet = { hemi: 2.6, sun: 1.1, fill: 1.5, point: 1.2, bloom: 0.55 }
+const DAY: LightSet = { hemi: 4.2, sun: 3.6, fill: 2.2, point: 0, bloom: 0.12 }
+const COLORS = {
+  sky: [new Color('#7a82e0'), new Color('#bcd4f0')],
+  ground: [new Color('#3a2a60'), new Color('#b9a58c')],
+  sun: [new Color('#ff5ae0'), new Color('#fff1d6')],
+  fill: [new Color('#b4c2ff'), new Color('#ffffff')],
+  background: [new Color('#05060a'), new Color('#a9bbd6')],
+}
+
+function setBloom(effect: BloomEffect | null, intensity: number) {
+  if (effect) effect.intensity = intensity
+}
+
+// Nachts: wenig Grundhelligkeit, dazu farbiges Licht von Stadt und LEDs.
+// Tagsüber: warmes Sonnenlicht durch die Balkontür. Der Übergang blendet weich über.
+function Lights({ mode, bloom }: { mode: Mode; bloom: RefObject<BloomEffect | null> }) {
+  const hemi = useRef<HemisphereLight>(null)
+  const sun = useRef<DirectionalLight>(null)
+  const fill = useRef<DirectionalLight>(null)
+  const cyan = useRef<PointLight>(null)
+  const magenta = useRef<PointLight>(null)
+  const t = useRef(0)
+  const { scene, invalidate } = useThree((s) => ({ scene: s.scene, invalidate: s.invalidate }))
+
+  useFrame((_, delta) => {
+    const goal = mode === 'tag' ? 1 : 0
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const settled = Math.abs(goal - t.current) < 0.001
+    if (settled && t.current === goal) return
+    t.current = reduced || settled ? goal : MathUtils.damp(t.current, goal, 3, Math.min(delta, 0.05))
+    const k = t.current
+    const mix = (key: keyof LightSet) => MathUtils.lerp(NIGHT[key], DAY[key], k)
+    if (hemi.current) {
+      hemi.current.intensity = mix('hemi')
+      hemi.current.color.lerpColors(COLORS.sky[0], COLORS.sky[1], k)
+      hemi.current.groundColor.lerpColors(COLORS.ground[0], COLORS.ground[1], k)
+    }
+    if (sun.current) {
+      sun.current.intensity = mix('sun')
+      sun.current.color.lerpColors(COLORS.sun[0], COLORS.sun[1], k)
+    }
+    if (fill.current) {
+      fill.current.intensity = mix('fill')
+      fill.current.color.lerpColors(COLORS.fill[0], COLORS.fill[1], k)
+    }
+    if (cyan.current) cyan.current.intensity = mix('point')
+    if (magenta.current) magenta.current.intensity = mix('point')
+    setBloom(bloom.current, mix('bloom'))
+    if (scene.background instanceof Color) scene.background.lerpColors(COLORS.background[0], COLORS.background[1], k)
+    invalidate()
+  })
+
   return (
     <>
-      <hemisphereLight args={['#7a82e0', '#3a2a60', 2.6]} />
-      {/* Neonlicht der Stadt, das durch die Balkontür fällt */}
+      <hemisphereLight ref={hemi} args={['#7a82e0', '#3a2a60', NIGHT.hemi]} />
+      {/* Licht von draußen, das durch die Balkontür fällt: nachts Neon der Stadt, tagsüber Sonne */}
       <directionalLight
+        ref={sun}
         position={[1.4, 3.6, -7]}
-        intensity={1.1}
+        intensity={NIGHT.sun}
         color="#ff5ae0"
         castShadow
         shadow-mapSize={[1024, 1024]}
@@ -36,9 +91,9 @@ function Lights() {
         shadow-camera-far={14}
       />
       {/* Kühle Aufhellung von vorn, damit keine Ecke absäuft */}
-      <directionalLight position={[1, 3.5, 6]} intensity={1.5} color="#b4c2ff" />
-      <pointLight position={[-1.2, 1.4, 0]} intensity={1.2} distance={4.5} decay={1.6} color={NEON.cyan} />
-      <pointLight position={[1.2, 1.4, 0.5]} intensity={1.2} distance={4.5} decay={1.6} color={NEON.magenta} />
+      <directionalLight ref={fill} position={[1, 3.5, 6]} intensity={NIGHT.fill} color="#b4c2ff" />
+      <pointLight ref={cyan} position={[-1.2, 1.4, 0]} intensity={NIGHT.point} distance={4.5} decay={1.6} color={NEON.cyan} />
+      <pointLight ref={magenta} position={[1.2, 1.4, 0.5]} intensity={NIGHT.point} distance={4.5} decay={1.6} color={NEON.magenta} />
     </>
   )
 }
@@ -91,6 +146,8 @@ function CameraRig({ active }: { active: SectionId | null }) {
 export default function RoomScene() {
   const [active, setActive] = useState<SectionId | null>(null)
   const [hovered, setHovered] = useState<SectionId | null>(null)
+  const [mode, setMode] = useState<Mode>('nacht')
+  const bloom = useRef<BloomEffect>(null)
   const trigger = useRef<HTMLElement | null>(null)
   const hotspotRefs: HotspotRefs = useRef({})
 
@@ -116,10 +173,11 @@ export default function RoomScene() {
         dpr={[1, 2]}
         camera={{ position: start.position, fov: portrait ? FOV.portrait : FOV.landscape }}
       >
+        <ThemeContext.Provider value={mode}>
         <InteractionContext.Provider value={interaction}>
           <color attach="background" args={['#05060a']} />
           <Selection>
-            <Lights />
+            <Lights mode={mode} bloom={bloom} />
             <Structure />
             <Desk />
             <Interactive id="skills">
@@ -133,13 +191,22 @@ export default function RoomScene() {
             <Chair />
             <EffectComposer autoClear={false}>
               <Outline blur edgeStrength={6} width={600} visibleEdgeColor={0x19e6ff} hiddenEdgeColor={0x19e6ff} />
-              <Bloom mipmapBlur intensity={0.55} luminanceThreshold={0.9} luminanceSmoothing={0.15} />
+              <Bloom ref={bloom} mipmapBlur intensity={0.55} luminanceThreshold={0.9} luminanceSmoothing={0.15} />
             </EffectComposer>
           </Selection>
           <HotspotProjector refs={hotspotRefs} />
           <CameraRig active={active} />
         </InteractionContext.Provider>
+        </ThemeContext.Provider>
       </Canvas>
+      <button
+        type="button"
+        className="scene__mode"
+        aria-pressed={mode === 'tag'}
+        onClick={() => setMode(mode === 'tag' ? 'nacht' : 'tag')}
+      >
+        Tageslicht
+      </button>
       <Hotspots refs={hotspotRefs} hovered={hovered} activeId={active} onHover={setHovered} onPick={pick} />
       {active ? (
         <InfoPanel id={active} onClose={close} />
