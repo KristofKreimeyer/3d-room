@@ -75,7 +75,7 @@ function BackWall() {
   const pieces: [number, number, number, number][] = [
     [(-HALF_W - T + left) / 2, height / 2, left + HALF_W + T, height],
     [(right + HALF_W + T) / 2, height / 2, HALF_W + T - right, height],
-    [door.x, (door.h + height) / 2, door.w + 0.2, height - door.h],
+    [door.x, (door.h + height) / 2, door.w, height - door.h],
   ]
   return (
     <group position-z={-HALF_D - T / 2}>

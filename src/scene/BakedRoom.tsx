@@ -9,9 +9,13 @@ import { useSpin } from './use-spin'
 
 // Das Modell stammt aus Blender (tools/blender): pro Objektgruppe ein Mesh und je eine gebackene
 // Lichttextur für Nacht und Tag. Die Texturen enthalten Licht, Schatten und Materialien, die Szene braucht kein Licht.
+// Bildschirme, Whiteboard und Himmel bleiben als eigene Bildflächen (images.glb), damit ihr Inhalt scharf ist.
 const BASE = `${import.meta.env.BASE_URL}room/`
-const PARTS = ['shell', 'desk', 'lowshelves', 'drums', 'shelf', 'monitor', 'smartphone', 'whiteboard', 'chair'] as const
+const PARTS = [
+  'shell', 'desk', 'lowshelves', 'drums', 'shelf', 'monitor', 'smartphone', 'whiteboard', 'chair', 'poster0', 'poster1',
+] as const
 type Part = (typeof PARTS)[number]
+type ImagePart = 'monitor_img' | 'smartphone_img' | 'whiteboard_img' | 'sky_img'
 
 const BACKGROUND = { nacht: new Color('#15100d'), tag: new Color('#d9cdbd') }
 
@@ -33,29 +37,41 @@ function setBackground(background: unknown, t: number) {
   if (background instanceof Color) background.lerpColors(BACKGROUND.nacht, BACKGROUND.tag, t)
 }
 
+function basic(map: Texture) {
+  return new MeshBasicMaterial({ map, toneMapped: false })
+}
+
+// Der Tag liegt als durchscheinende zweite Schicht über der Nacht und blendet weich ein.
+function overlay(map: Texture) {
+  return new MeshBasicMaterial({ map, toneMapped: false, transparent: true, opacity: 0, depthWrite: false, visible: false })
+}
+
+type Geo = { geometry: BufferGeometry; material?: { map: Texture | null } }
+
 export function BakedRoom() {
   const mode = useMode()
   const { nodes } = useGLTF(`${BASE}room.glb`)
-  const night = useTexture(PARTS.map((p) => `${BASE}${p}_night.jpg`), (t) => [t].flat().forEach(prepare))
-  const day = useTexture(PARTS.map((p) => `${BASE}${p}_day.jpg`), (t) => [t].flat().forEach(prepare))
+  const images = useGLTF(`${BASE}images.glb`).nodes
+  const onLoad = (t: Texture | Texture[]) => [t].flat().forEach(prepare)
+  const night = useTexture(PARTS.map((p) => `${BASE}${p}_night.jpg`), onLoad)
+  const day = useTexture(PARTS.map((p) => `${BASE}${p}_day.jpg`), onLoad)
+  const sky = useTexture([`${BASE}sky_night.png`, `${BASE}sky_day.png`], onLoad)
 
-  const materials = useMemo(
-    () =>
-      PARTS.map((_, i) => ({
-        night: new MeshBasicMaterial({ map: night[i], toneMapped: false }),
-        // Der Tag liegt als durchscheinende zweite Schicht über der Nacht und blendet weich ein.
-        day: new MeshBasicMaterial({
-          map: day[i],
-          toneMapped: false,
-          transparent: true,
-          opacity: 0,
-          depthWrite: false,
-          visible: false,
-        }),
-      })),
-    [night, day],
+  const materials = useMemo(() => {
+    const parts = Object.fromEntries(PARTS.map((p, i) => [p, { night: basic(night[i]), day: overlay(day[i]) }]))
+    const skyPair = { night: basic(sky[0]), day: overlay(sky[1]) }
+    const pictures = Object.fromEntries(
+      (['monitor_img', 'smartphone_img', 'whiteboard_img'] as const).map((n) => {
+        const map = (images[n] as unknown as Geo).material?.map
+        return [n, map ? basic(map) : null]
+      }),
+    )
+    return { parts, skyPair, pictures }
+  }, [night, day, sky, images])
+  const overlays = useMemo(
+    () => [...Object.values(materials.parts).map((m) => m.day), materials.skyPair.day],
+    [materials],
   )
-  const overlays = useMemo(() => materials.map((m) => m.day), [materials])
 
   const t = useRef(mode === 'tag' ? 1 : 0)
   const scene = useThree((s) => s.scene)
@@ -72,14 +88,26 @@ export function BakedRoom() {
   })
 
   const layer = (name: Part) => {
-    const mesh = nodes[name] as unknown as { geometry: BufferGeometry }
-    const i = PARTS.indexOf(name)
+    const { geometry } = nodes[name] as unknown as Geo
+    const pair = materials.parts[name]
     return (
       <>
-        <mesh geometry={mesh.geometry} material={materials[i].night} />
-        <mesh geometry={mesh.geometry} material={materials[i].day} renderOrder={1} raycast={() => null} />
+        <mesh geometry={geometry} material={pair.night} />
+        <mesh geometry={geometry} material={pair.day} renderOrder={1} raycast={() => null} />
       </>
     )
+  }
+  const picture = (name: ImagePart) => {
+    const { geometry } = images[name] as unknown as Geo
+    if (name === 'sky_img') {
+      return (
+        <>
+          <mesh geometry={geometry} material={materials.skyPair.night} raycast={() => null} />
+          <mesh geometry={geometry} material={materials.skyPair.day} renderOrder={1} raycast={() => null} />
+        </>
+      )
+    }
+    return <mesh geometry={geometry} material={materials.pictures[name] ?? undefined} />
   }
 
   const { ref: chairRef, handlers: chairHandlers } = useSpin()
@@ -89,12 +117,24 @@ export function BakedRoom() {
   return (
     <>
       {layer('shell')}
+      {picture('sky_img')}
+      {layer('poster0')}
+      {layer('poster1')}
       {layer('desk')}
       {layer('lowshelves')}
       {layer('drums')}
-      <Interactive id="projekte">{layer('monitor')}</Interactive>
-      <Interactive id="kontakt">{layer('smartphone')}</Interactive>
-      <Interactive id="skills">{layer('whiteboard')}</Interactive>
+      <Interactive id="projekte">
+        {layer('monitor')}
+        {picture('monitor_img')}
+      </Interactive>
+      <Interactive id="kontakt">
+        {layer('smartphone')}
+        {picture('smartphone_img')}
+      </Interactive>
+      <Interactive id="skills">
+        {layer('whiteboard')}
+        {picture('whiteboard_img')}
+      </Interactive>
       <Interactive id="ueber-mich">{layer('shelf')}</Interactive>
       {/* Der Stuhl dreht sich um seine eigene Achse; das Mesh liegt in Weltkoordinaten und wird zurückgeschoben. */}
       {place(
@@ -107,3 +147,4 @@ export function BakedRoom() {
 }
 
 useGLTF.preload(`${BASE}room.glb`)
+useGLTF.preload(`${BASE}images.glb`)

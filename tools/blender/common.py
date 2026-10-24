@@ -108,6 +108,7 @@ def convert_materials(emission):
                 if grp == 'shell' and obj.location.y > -2.4 and img.size[1] > 300:
                     make_diffuse_from_unlit(mat)  # Poster
                     add_bevel(mat, 0.002)
+                    registry[mat.name] = 'poster'
                 elif img.size[0] == 512 and img.size[1] == 256:
                     make_emission(mat, emission['sky'])
                     registry[mat.name] = 'sky'
@@ -136,9 +137,24 @@ def convert_materials(emission):
 
 def apply_emission(registry, emission):
     for name, kind in registry.items():
+        if kind not in emission:
+            continue
         for n in bpy.data.materials[name].node_tree.nodes:
             if n.bl_idname == 'ShaderNodeEmission':
                 n.inputs['Strength'].default_value = emission[kind]
+
+
+def make_plain(mat):
+    """Emission-Material mit Bild → einfaches Material mit Bild (für den glTF-Export)."""
+    nt = mat.node_tree
+    img = next((n.image for n in nt.nodes if n.bl_idname == 'ShaderNodeTexImage'), None)
+    nt.nodes.clear()
+    out = nt.nodes.new('ShaderNodeOutputMaterial')
+    bsdf = nt.nodes.new('ShaderNodeBsdfPrincipled')
+    tex = nt.nodes.new('ShaderNodeTexImage')
+    tex.image = img
+    nt.links.new(tex.outputs['Color'], bsdf.inputs['Base Color'])
+    nt.links.new(bsdf.outputs['BSDF'], out.inputs['Surface'])
 
 
 def set_sky_image(registry, image):

@@ -13,8 +13,8 @@ npm install && npx playwright install chromium                      # nur für d
 
 ## Schritte
 
-1. **Szene exportieren.** `npm run dev`, dann `http://localhost:5173/3d-room/?szene=prozedural` öffnen. Diese Ansicht
-   zeigt die Szene aus Code und stellt sie als `window.__scene` bereit. `GLTFExporter` schreibt sie als
+1. **Szene exportieren.** `npm run dev`, dann `node tools/blender/export-scene.mjs blender-out`. Das Skript öffnet `?szene=prozedural`. Diese Ansicht
+   zeigt die Szene aus Code und stellt sie als `window.__scene` bereit. `tools/blender/export-scene.mjs` (Playwright) schreibt sie mit dem `GLTFExporter` als
    `room_raw.glb`; die beiden Himmelsbilder (`sky_night.png`, `sky_day.png`) kommen aus `skyTexture()`.
 2. **Backen.** `python tools/blender/bake.py -- room_raw.glb out 256`
    - Gruppen (`shell`, `desk`, `shelf`, `chair`, ...) werden zu je einem Mesh vereint und UV-entfaltet.

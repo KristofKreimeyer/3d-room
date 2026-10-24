@@ -13,20 +13,20 @@ import bpy
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import (  # noqa: E402
-    GROUPS, add_sun, apply_emission, clear_lights, convert_materials, group_of, mesh_objects,
+    GROUPS, add_sun, apply_emission, clear_lights, convert_materials, group_of, make_plain, mesh_objects,
     reset, set_sky_image, set_world, setup_cycles,
 )
 
 args = sys.argv[sys.argv.index('--') + 1:]
 glb, out_dir = args[0], args[1]
 samples = int(args[2]) if len(args) > 2 else 128
-only = args[3].split(',') if len(args) > 3 else list(GROUPS)
+only = args[3].split(',') if len(args) > 3 else [*GROUPS, 'poster0', 'poster1']
 sky_dir = os.path.dirname(glb)
 
 # Texturgrößen je Gruppe
 SIZES = {
     'shell': 2048, 'desk': 2048, 'shelf': 1024, 'lowshelves': 1024, 'drums': 1024,
-    'chair': 512, 'monitor': 1024, 'smartphone': 256, 'whiteboard': 512,
+    'chair': 512, 'monitor': 1024, 'smartphone': 256, 'whiteboard': 512, 'poster0': 512, 'poster1': 512,
 }
 
 NIGHT = dict(sky=3.0, screen=1.5, led=3, bulb_pendant=1100, bulb_desk=120)
@@ -41,9 +41,36 @@ set_sky_image(registry, sky['night'])
 # Eltern lösen, Transformationen anwenden, pro Gruppe zu einem Mesh vereinen
 bpy.ops.object.select_all(action='DESELECT')
 meshes = mesh_objects()
+EMIT = ('monitor_img', 'smartphone_img', 'whiteboard_img', 'sky_img')
 by_group = {}
+posters = []
+def alpha_of(mat):
+    bsdf = next((n for n in mat.node_tree.nodes if n.bl_idname == 'ShaderNodeBsdfPrincipled'), None)
+    return bsdf.inputs['Alpha'].default_value if bsdf else 1.0
+
+
+# Fast durchsichtiges Glas (Balkontür) würde als undurchsichtige Fläche gebacken und den Himmel verdecken
+for o in list(meshes):
+    if o.material_slots and alpha_of(o.material_slots[0].material) < 0.15:
+        meshes.remove(o)
+        bpy.data.objects.remove(o)
+
 for o in meshes:
-    by_group.setdefault(group_of(o), []).append(o)
+    mat = o.material_slots[0].material.name if o.material_slots else None
+    kind = registry.get(mat)
+    grp = group_of(o)
+    if kind == 'sky':
+        grp = 'sky_img'  # Bildflächen bleiben unverändert und werden live gezeigt
+    elif kind == 'screen':
+        grp = f'{grp}_img'
+    elif kind == 'poster':
+        posters.append(o)
+        continue
+    by_group.setdefault(grp, []).append(o)
+# Poster bekommen je eine eigene Textur, damit sie scharf bleiben
+posters.sort(key=lambda o: sum(v.co.y for v in o.data.vertices) / len(o.data.vertices))
+for i, o in enumerate(posters):
+    by_group[f'poster{i}'] = [o]
 for o in meshes:
     o.select_set(True)
 bpy.context.view_layer.objects.active = meshes[0]
@@ -53,7 +80,7 @@ for o in [o for o in bpy.data.objects if o.type == 'EMPTY']:
     bpy.data.objects.remove(o)
 
 joined = {}
-for grp in GROUPS:
+for grp in list(by_group):
     objs = by_group.get(grp)
     if not objs:
         continue
@@ -67,8 +94,10 @@ for grp in GROUPS:
     joined[grp] = obj
     print('gruppe', grp, len(objs), 'Teile', len(obj.data.polygons), 'Flächen')
 
-# UV-Atlas pro Gruppe
+# UV-Atlas pro Gruppe (Bildflächen behalten ihre UVs)
 for grp, obj in joined.items():
+    if grp in EMIT:
+        continue
     bpy.ops.object.select_all(action='DESELECT')
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
@@ -85,6 +114,8 @@ for grp, obj in joined.items():
 images = {}
 bake_nodes = {}
 for grp, obj in joined.items():
+    if grp in EMIT:
+        continue
     size = SIZES[grp]
     for mode in ('night', 'day'):
         images[(grp, mode)] = bpy.data.images.new(f'{grp}_{mode}', size, size, alpha=False, float_buffer=True)
@@ -108,9 +139,10 @@ sc.render.image_settings.quality = 92
 
 
 def bake_all(mode):
+    sc.view_settings.exposure = 0.6 if mode == 'night' else 0.9
     for grp in only:
         obj = joined.get(grp)
-        if not obj:
+        if not obj or grp in EMIT:
             continue
         for node in bake_nodes[grp]:
             node.image = images[(grp, mode)]
@@ -132,16 +164,26 @@ bake_all('night')
 clear_lights()
 apply_emission(registry, DAY)
 set_sky_image(registry, sky['day'])
-set_world((0.7, 0.8, 1.0), 0.9)
-add_sun((1.4, 7, 3.6), (1.0, 0.93, 0.8), 6, 2)
+set_world((0.7, 0.8, 1.0), 1.6)
+add_sun((1.4, 7, 3.6), (1.0, 0.93, 0.8), 9, 2)
 bake_all('day')
 
 # Geometrie ohne Materialien exportieren (Texturen kommen aus den JPGs)
-bpy.ops.object.select_all(action='DESELECT')
-for obj in joined.values():
-    obj.select_set(True)
-bpy.ops.export_scene.gltf(
-    filepath=os.path.join(out_dir, 'room.glb'), export_format='GLB', use_selection=True,
-    export_materials='NONE', export_normals=False, export_cameras=False, export_lights=False,
-)
+def export(names, filename, materials):
+    bpy.ops.object.select_all(action='DESELECT')
+    for n in names:
+        joined[n].select_set(True)
+    bpy.ops.export_scene.gltf(
+        filepath=os.path.join(out_dir, filename), export_format='GLB', use_selection=True,
+        export_materials=materials, export_normals=False, export_cameras=False, export_lights=False,
+    )
+
+
+export([g for g in joined if g not in EMIT], 'room.glb', 'NONE')
+# Bildflächen (Bildschirme, Whiteboard, Himmel) mit ihren Originalbildern
+for g in EMIT:
+    if g in joined:
+        for slot in joined[g].material_slots:
+            make_plain(slot.material)
+export([g for g in EMIT if g in joined], 'images.glb', 'EXPORT')
 print('fertig')
