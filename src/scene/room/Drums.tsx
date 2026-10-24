@@ -1,13 +1,13 @@
 import { DRUMS } from './layout'
 
-const SHELL = '#7a1f24'
+const SHELL = '#1e1e21'
 const CHROME = '#c8c8cc'
 const BRASS = '#d9b45a'
 
-// Schlagzeug neben dem großen Regal. Lokal sitzt der Drummer bei +z und blickt zur Raummitte (-z).
+// Schlagzeug zwischen Regal und Balkontür. Lokal sitzt der Drummer bei +z und blickt zur Raummitte (-z).
 export function Drums() {
   return (
-    <group name="drums" position={[DRUMS.x, 0, DRUMS.z]} rotation-y={-0.8}>
+    <group name="drums" position={[DRUMS.x, 0, DRUMS.z]} rotation-y={Math.PI / 2 + 0.4} scale={0.85}>
       {/* Drum-Teppich */}
       <mesh position={[0, 0.008, 0.15]} rotation-x={-Math.PI / 2} receiveShadow>
         <planeGeometry args={[1.8, 1.6]} />
@@ -92,7 +92,7 @@ function Drum({ radius, depth, color = SHELL }: { radius: number; depth: number;
         <group key={s} position-y={(s * depth) / 2}>
           <mesh>
             <cylinderGeometry args={[radius * 0.98, radius * 0.98, 0.006, 32]} />
-            <meshStandardMaterial color="#f1ede6" roughness={0.7} />
+            <meshStandardMaterial color="#3b3b3f" roughness={0.9} />
           </mesh>
           <mesh>
             <torusGeometry args={[radius, 0.01, 6, 32]} />

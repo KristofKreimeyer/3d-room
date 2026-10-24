@@ -2,16 +2,16 @@ import { OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import { Desk } from './room/Desk'
 import { Drums } from './room/Drums'
-import { BigPlant, Chair, FloorLamp, Shelf, Whiteboard } from './room/Furniture'
+import { Chair, Shelf, Whiteboard } from './room/Furniture'
 import { Structure } from './room/Structure'
 
 function Lights() {
   return (
     <>
-      <hemisphereLight args={['#ffe9d2', '#6b4a33', 0.55]} />
+      <hemisphereLight args={['#fff1e0', '#8a6a4f', 1.1]} />
       {/* Abendsonne, die durch die Balkontür fällt */}
       <directionalLight
-        position={[1.2, 3.4, -7]}
+        position={[1.4, 3.6, -7]}
         intensity={1.6}
         color="#ffcf9a"
         castShadow
@@ -25,18 +25,18 @@ function Lights() {
         shadow-camera-far={14}
       />
       {/* Weiche Aufhellung von vorn, damit keine Ecke absäuft */}
-      <directionalLight position={[6, 3.5, 1]} intensity={0.4} color="#ffe2c4" />
+      <directionalLight position={[1, 3.5, 6]} intensity={0.8} color="#ffe2c4" />
     </>
   )
 }
 
-// Die Kamera schaut von der offenen Seite (+x) auf Schreibtisch, Balkontür und Regal.
+// Die Kamera steht in der Zimmertür (offene Seite bei +z) und schaut Richtung Balkon.
 // Auf schmalen Hochformat-Bildschirmen startet sie weiter weg und mit größerem Blickwinkel.
 function initialCamera() {
   const portrait = window.innerWidth / window.innerHeight < 0.8
   return portrait
-    ? { position: [7.2, 2.3, 0.8] as const, fov: 62 }
-    : { position: [5.8, 2.9, 0.8] as const, fov: 50 }
+    ? { position: [0.3, 2.2, 5.6] as const, fov: 66 }
+    : { position: [0.8, 2.3, 4.3] as const, fov: 58 }
 }
 
 export default function RoomScene() {
@@ -58,18 +58,16 @@ export default function RoomScene() {
         <Shelf />
         <Drums />
         <Chair />
-        <FloorLamp />
-        <BigPlant />
         <OrbitControls
-          target={[-0.8, 1.1, -0.1]}
+          target={[0, 1.1, -1]}
           enablePan={false}
           enableDamping
-          minDistance={2.5}
+          minDistance={2}
           maxDistance={9}
           minPolarAngle={0.5}
           maxPolarAngle={Math.PI / 2.05}
-          minAzimuthAngle={Math.PI / 2 - 0.6}
-          maxAzimuthAngle={Math.PI / 2 + 0.6}
+          minAzimuthAngle={-0.6}
+          maxAzimuthAngle={0.6}
         />
       </Canvas>
       <p className="scene__hint">

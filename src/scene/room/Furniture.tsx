@@ -1,17 +1,14 @@
 import { RoundedBox } from '@react-three/drei'
 import { useMemo } from 'react'
 import { seeded, whiteboardTexture, woodTexture } from '../textures'
-import { DESK, ROOM, SHELF, WHITEBOARD } from './layout'
-
-const half = ROOM.size / 2
+import { DESK, HALF_W, SHELF, WHITEBOARD } from './layout'
 
 // Whiteboard an der linken Wand, führt in Schritt 3 zu den Skills.
 export function Whiteboard() {
   const board = useMemo(() => whiteboardTexture(), [])
-  const w = 1.7
-  const h = 1.02
+  const { w, h } = WHITEBOARD
   return (
-    <group name="whiteboard" position={[-half + 0.03, WHITEBOARD.y, WHITEBOARD.z]} rotation-y={Math.PI / 2}>
+    <group name="whiteboard" position={[-HALF_W + 0.03, WHITEBOARD.y, WHITEBOARD.z]} rotation-y={Math.PI / 2}>
       <RoundedBox args={[w + 0.05, h + 0.05, 0.03]} radius={0.01} castShadow>
         <meshStandardMaterial color="#b9bcc1" metalness={0.6} roughness={0.35} />
       </RoundedBox>
@@ -25,7 +22,7 @@ export function Whiteboard() {
         <meshStandardMaterial color="#b9bcc1" metalness={0.6} roughness={0.35} />
       </mesh>
       {['#2b5fa8', '#c0392b', '#222'].map((c, i) => (
-        <mesh key={c} position={[-0.2 + i * 0.1, -h / 2 - 0.01, 0.045]} rotation-z={Math.PI / 2}>
+        <mesh key={c} position={[-0.12 + i * 0.1, -h / 2 - 0.01, 0.045]} rotation-z={Math.PI / 2}>
           <cylinderGeometry args={[0.009, 0.009, 0.12, 8]} />
           <meshStandardMaterial color={c} />
         </mesh>
@@ -34,16 +31,16 @@ export function Whiteboard() {
   )
 }
 
-// Großes Regal an der Vorderwand, führt in Schritt 3 zu „Über mich".
-// Drei Spalten, fünf Fächer hoch; jedes Fach bekommt per Zufall Bücher, Kisten oder Deko.
+// Großes Regal an der rechten Wand, führt in Schritt 3 zu „Über mich".
+// Zwei Spalten, fünf Fächer hoch; jedes Fach bekommt per Zufall Bücher, Kisten oder Deko.
 const { width: W, height: H, depth: D } = SHELF
 const t = 0.03
-const cols = 3
-const rowY = [0.02, 0.46, 0.9, 1.34, 1.78]
+const cols = 2
+const rowY = [0.02, 0.42, 0.82, 1.22, 1.62]
 const colW = (W - t) / cols
 
 export function Shelf() {
-  const wood = useMemo(() => woodTexture({ base: [168, 116, 74], planks: 1, seed: 8 }), [])
+  const wood = useMemo(() => woodTexture({ base: [214, 186, 146], planks: 1, seed: 8 }), [])
   const items = useMemo(() => {
     const rand = seeded(21)
     const colors = ['#8c3b2e', '#2f4858', '#d9a441', '#5b7553', '#c8b8a2', '#6b4e71', '#a65e2e', '#33302d']
@@ -60,7 +57,7 @@ export function Shelf() {
           const end = x0 + colW - 0.04 - (rand() > 0.5 ? 0.25 : 0)
           while (x < end) {
             const w = 0.025 + rand() * 0.035
-            const h = 0.22 + rand() * 0.15
+            const h = 0.22 + rand() * 0.12
             books.push({ x: x + w / 2, y: y + h / 2, w, h, c: colors[Math.floor(rand() * colors.length)] })
             x += w + 0.004
           }
@@ -77,7 +74,8 @@ export function Shelf() {
   }, [])
   const board = <meshStandardMaterial map={wood} roughness={0.6} />
   return (
-    <group name="shelf" position={[SHELF.x, 0, half - D / 2 - 0.01]} rotation-y={Math.PI}>
+    <group name="shelf" position={[HALF_W - D / 2 - 0.01, 0, SHELF.z]} rotation-y={-Math.PI / 2}>
+      <HangingPlant />
       {Array.from({ length: cols + 1 }, (_, i) => (
         <mesh key={i} position={[-W / 2 + t / 2 + i * colW, H / 2, 0]} castShadow receiveShadow>
           <boxGeometry args={[t, H, D]} />
@@ -92,7 +90,7 @@ export function Shelf() {
       ))}
       <mesh position={[0, H / 2, -D / 2 + 0.005]} receiveShadow>
         <boxGeometry args={[W, H, 0.01]} />
-        <meshStandardMaterial color="#d8cbb9" />
+        <meshStandardMaterial color="#efe6d8" />
       </mesh>
       {items.books.map((b, i) => (
         <mesh key={i} position={[b.x, b.y, 0.03]} castShadow>
@@ -115,87 +113,92 @@ export function Shelf() {
   )
 }
 
+// Schwarzer Mesh-Bürostuhl mit hoher Lehne, Kopfstütze und Armlehnen.
 export function Chair() {
-  const fabric = <meshStandardMaterial color="#45525a" roughness={0.9} />
+  const mesh = <meshStandardMaterial color="#1d1d1f" roughness={0.8} />
   const dark = <meshStandardMaterial color="#222" roughness={0.5} metalness={0.4} />
   return (
-    <group position={[DESK.x + 0.85, 0, DESK.z + 0.05]} rotation-y={Math.PI / 2 - 0.35}>
-      <RoundedBox args={[0.5, 0.08, 0.48]} radius={0.03} position-y={0.48} castShadow>
-        {fabric}
+    <group position={[DESK.x + 0.85, 0, DESK.z + 0.25]} rotation-y={Math.PI / 2 - 0.5}>
+      <RoundedBox args={[0.52, 0.09, 0.5]} radius={0.035} position-y={0.5} castShadow>
+        {mesh}
       </RoundedBox>
-      <RoundedBox args={[0.48, 0.6, 0.07]} radius={0.03} position={[0, 0.85, 0.24]} rotation-x={-0.1} castShadow>
-        {fabric}
+      <RoundedBox args={[0.46, 0.72, 0.05]} radius={0.02} position={[0, 0.95, 0.26]} rotation-x={-0.12} castShadow>
+        {mesh}
       </RoundedBox>
+      <RoundedBox args={[0.3, 0.16, 0.06]} radius={0.03} position={[0, 1.42, 0.33]} rotation-x={-0.12} castShadow>
+        {mesh}
+      </RoundedBox>
+      {[-1, 1].map((s) => (
+        <group key={s} position-x={s * 0.28}>
+          <mesh position={[0, 0.62, 0.05]} castShadow>
+            <boxGeometry args={[0.03, 0.22, 0.03]} />
+            {dark}
+          </mesh>
+          <RoundedBox args={[0.06, 0.03, 0.26]} radius={0.01} position={[0, 0.74, 0]} castShadow>
+            {dark}
+          </RoundedBox>
+        </group>
+      ))}
       <mesh position={[0, 0.3, 0]} castShadow>
-        <cylinderGeometry args={[0.025, 0.025, 0.36, 12]} />
+        <cylinderGeometry args={[0.025, 0.025, 0.4, 12]} />
         {dark}
       </mesh>
-      {[0, 1, 2, 3, 4].map((i) => {
-        const a = (i / 5) * Math.PI * 2
-        return (
-          <group key={i} rotation-y={a}>
-            <mesh position={[0.15, 0.07, 0]} castShadow>
-              <boxGeometry args={[0.3, 0.03, 0.04]} />
-              {dark}
-            </mesh>
-            <mesh position={[0.29, 0.03, 0]}>
-              <sphereGeometry args={[0.03, 10, 8]} />
-              {dark}
-            </mesh>
-          </group>
-        )
-      })}
-    </group>
-  )
-}
-
-export function FloorLamp() {
-  return (
-    <group position={[-half + 0.35, 0, -half + 0.35]}>
-      <mesh position-y={0.015} castShadow>
-        <cylinderGeometry args={[0.16, 0.18, 0.03, 24]} />
-        <meshStandardMaterial color="#2b2b2e" metalness={0.5} roughness={0.4} />
-      </mesh>
-      <mesh position-y={0.8} castShadow>
-        <cylinderGeometry args={[0.012, 0.012, 1.6, 8]} />
-        <meshStandardMaterial color="#2b2b2e" metalness={0.5} roughness={0.4} />
-      </mesh>
-      <mesh position-y={1.62}>
-        <cylinderGeometry args={[0.16, 0.22, 0.3, 32, 1, true]} />
-        <meshStandardMaterial color="#f3e2c7" emissive="#ffb066" emissiveIntensity={0.9} side={2} roughness={0.9} />
-      </mesh>
-      <pointLight position-y={1.55} intensity={4} distance={5} decay={1.6} color="#ffad5c" />
-    </group>
-  )
-}
-
-export function BigPlant() {
-  const leaves = useMemo(() => {
-    const rand = seeded(42)
-    return Array.from({ length: 16 }, () => ({
-      a: rand() * Math.PI * 2,
-      tilt: 0.3 + rand() * 0.7,
-      len: 0.35 + rand() * 0.3,
-      y: 0.55 + rand() * 0.6,
-    }))
-  }, [])
-  return (
-    <group position={[ROOM.door.x + ROOM.door.w / 2 + 1.1, 0, -half + 0.45]} scale={0.85}>
-      <mesh position-y={0.2} castShadow receiveShadow>
-        <cylinderGeometry args={[0.2, 0.16, 0.4, 24]} />
-        <meshStandardMaterial color="#c9b49a" roughness={0.9} />
-      </mesh>
-      <mesh position-y={0.7} castShadow>
-        <cylinderGeometry args={[0.015, 0.02, 1, 6]} />
-        <meshStandardMaterial color="#5d4a32" />
-      </mesh>
-      {leaves.map((l, i) => (
-        <group key={i} position-y={l.y} rotation={[0, l.a, l.tilt]}>
-          <mesh position-y={l.len / 2} scale={[0.09, l.len / 2, 0.02]} castShadow>
-            <sphereGeometry args={[1, 10, 8]} />
-            <meshStandardMaterial color={i % 3 ? '#4f7f45' : '#3f6b3a'} roughness={0.6} />
+      {[0, 1, 2, 3, 4].map((i) => (
+        <group key={i} rotation-y={(i / 5) * Math.PI * 2}>
+          <mesh position={[0.17, 0.07, 0]} castShadow>
+            <boxGeometry args={[0.34, 0.03, 0.04]} />
+            {dark}
+          </mesh>
+          <mesh position={[0.33, 0.03, 0]}>
+            <sphereGeometry args={[0.03, 10, 8]} />
+            {dark}
           </mesh>
         </group>
+      ))}
+    </group>
+  )
+}
+
+// Efeutute oben auf dem Regal, deren Ranken vorn herunterhängen.
+function HangingPlant() {
+  const leaves = useMemo(() => {
+    const rand = seeded(42)
+    const list: { p: [number, number, number]; r: [number, number, number]; s: number }[] = []
+    // Busch auf dem Topf
+    for (let i = 0; i < 40; i++) {
+      const a = rand() * Math.PI * 2
+      const rr = rand() * 0.26
+      list.push({
+        p: [0.35 + Math.cos(a) * rr, H + 0.26 + rand() * 0.2, Math.sin(a) * rr * 0.6],
+        r: [rand() * 3, rand() * 3, rand() * 3],
+        s: 0.035 + rand() * 0.02,
+      })
+    }
+    // Ranken vor dem Regal
+    for (let v = 0; v < 6; v++) {
+      const x = 0.1 + v * 0.11 + rand() * 0.05
+      const len = 0.5 + rand() * 1.1
+      for (let y = 0; y < len; y += 0.09) {
+        list.push({
+          p: [x + Math.sin(y * 5 + v) * 0.04, H + 0.1 - y, D / 2 + 0.04 + rand() * 0.03],
+          r: [rand() * 3, rand() * 3, rand() * 3],
+          s: 0.035 + rand() * 0.02,
+        })
+      }
+    }
+    return list
+  }, [])
+  return (
+    <group>
+      <mesh position={[0.35, H + 0.12, 0]} castShadow>
+        <cylinderGeometry args={[0.13, 0.1, 0.22, 20]} />
+        <meshStandardMaterial color="#e9e2d6" roughness={0.8} />
+      </mesh>
+      {leaves.map((l, i) => (
+        <mesh key={i} position={l.p} rotation={l.r} scale={[l.s, l.s * 0.25, l.s * 1.3]} castShadow>
+          <sphereGeometry args={[1, 8, 6]} />
+          <meshStandardMaterial color={i % 3 ? '#4f8a3a' : '#7aa84a'} roughness={0.6} />
+        </mesh>
       ))}
     </group>
   )

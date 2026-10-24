@@ -1,5 +1,6 @@
 import { RoundedBox } from '@react-three/drei'
 import { useMemo } from 'react'
+import type { Texture } from 'three'
 import { phoneTexture, screenTexture, woodTexture } from '../textures'
 import { DESK } from './layout'
 
@@ -9,7 +10,7 @@ const METAL = '#2b2b2e'
 // damit sie in Schritt 3 klickbar werden.
 export function Desk() {
   const wood = useMemo(
-    () => woodTexture({ base: [150, 98, 60], planks: 1, seed: 4 }),
+    () => woodTexture({ base: [214, 184, 140], planks: 1, seed: 4 }),
     [],
   )
   const { x, z, width, depth, height } = DESK
@@ -59,34 +60,76 @@ export function Desk() {
           <cylinderGeometry args={[0.005, 0.005, 0.14, 8]} />
           <meshStandardMaterial color="#c5a15a" metalness={0.5} roughness={0.3} />
         </mesh>
-        <SmallPlant />
+        <Printer />
       </group>
+      {/* PC unter dem Tisch */}
+      <RoundedBox args={[0.2, 0.46, 0.45]} radius={0.015} position={[-0.45, 0.23, -0.1]} castShadow>
+        <meshStandardMaterial color="#1f2a4a" roughness={0.5} />
+      </RoundedBox>
     </group>
   )
 }
 
+// Drei Bildschirme an einer Monitorstange: zwei nebeneinander, einer darüber.
 function Monitor() {
   const screen = useMemo(() => screenTexture(), [])
+  const pole = <meshStandardMaterial color="#2b2b2e" metalness={0.5} roughness={0.4} />
   return (
-    <group name="monitor" position={[0, 0, -0.15]}>
-      {/* Fuß und Arm */}
-      <RoundedBox args={[0.24, 0.015, 0.16]} radius={0.006} position-y={0.008} castShadow>
-        <meshStandardMaterial color="#9a9da3" metalness={0.7} roughness={0.35} />
-      </RoundedBox>
-      <mesh position={[0, 0.17, -0.03]} castShadow>
-        <boxGeometry args={[0.05, 0.32, 0.02]} />
-        <meshStandardMaterial color="#9a9da3" metalness={0.7} roughness={0.35} />
+    <group name="monitor" position={[-0.05, 0, -0.25]}>
+      <mesh position-y={0.42} castShadow>
+        <cylinderGeometry args={[0.018, 0.018, 0.84, 10]} />
+        {pole}
       </mesh>
-      {/* Gehäuse und Bildschirm */}
-      <RoundedBox args={[0.92, 0.54, 0.035]} radius={0.012} position={[0, 0.48, 0]} castShadow>
+      <mesh position={[0, 0.3, 0.02]} castShadow>
+        <boxGeometry args={[1.0, 0.04, 0.03]} />
+        {pole}
+      </mesh>
+      <Screen tex={screen} position={[-0.29, 0.34, 0.06]} rotationY={0.12} />
+      <Screen tex={screen} position={[0.29, 0.34, 0.06]} rotationY={-0.12} />
+      <Screen tex={screen} position={[-0.2, 0.72, 0.04]} rotationY={0.05} />
+      {/* Bildschirmlicht auf Tastatur und Tisch */}
+      <pointLight position={[0, 0.4, 0.35]} intensity={0.6} distance={1.3} color="#9fc2ff" />
+    </group>
+  )
+}
+
+function Screen({
+  tex,
+  position,
+  rotationY,
+}: {
+  tex: Texture
+  position: [number, number, number]
+  rotationY: number
+}) {
+  return (
+    <group position={position} rotation-y={rotationY}>
+      <RoundedBox args={[0.56, 0.34, 0.03]} radius={0.01} castShadow>
         <meshStandardMaterial color="#1c1c1f" roughness={0.4} />
       </RoundedBox>
-      <mesh position={[0, 0.49, 0.018]}>
-        <planeGeometry args={[0.88, 0.5]} />
-        <meshBasicMaterial map={screen} toneMapped={false} />
+      <mesh position-z={0.016}>
+        <planeGeometry args={[0.53, 0.31]} />
+        <meshBasicMaterial map={tex} toneMapped={false} />
       </mesh>
-      {/* Bildschirmlicht auf Tastatur und Tisch */}
-      <pointLight position={[0, 0.45, 0.25]} intensity={0.6} distance={1.2} color="#9fc2ff" />
+    </group>
+  )
+}
+
+// 3D-Drucker am Tischende unter dem Whiteboard.
+function Printer() {
+  return (
+    <group position={[0.62, 0, -0.12]}>
+      <RoundedBox args={[0.38, 0.3, 0.34]} radius={0.02} position-y={0.15} castShadow>
+        <meshStandardMaterial color="#2a2a2c" roughness={0.5} />
+      </RoundedBox>
+      <mesh position={[0, 0.17, 0.171]}>
+        <planeGeometry args={[0.3, 0.2]} />
+        <meshStandardMaterial color="#5d6670" transparent opacity={0.7} roughness={0.1} />
+      </mesh>
+      <mesh position={[0, 0.17, 0.12]} castShadow>
+        <boxGeometry args={[0.08, 0.06, 0.08]} />
+        <meshStandardMaterial color="#e86b2f" roughness={0.5} />
+      </mesh>
     </group>
   )
 }
@@ -94,7 +137,7 @@ function Monitor() {
 function Phone() {
   const screen = useMemo(() => phoneTexture(), [])
   return (
-    <group name="smartphone" position={[0.62, 0.006, 0.18]} rotation-y={-0.35}>
+    <group name="smartphone" position={[0.3, 0.006, 0.2]} rotation-y={-0.35}>
       <RoundedBox args={[0.075, 0.009, 0.155]} radius={0.004} castShadow>
         <meshStandardMaterial color="#1a1a1c" roughness={0.3} metalness={0.3} />
       </RoundedBox>
@@ -108,7 +151,7 @@ function Phone() {
 
 function Mug() {
   return (
-    <group position={[0.75, 0, -0.1]}>
+    <group position={[-0.5, 0, 0.0]}>
       <mesh position-y={0.05} castShadow>
         <cylinderGeometry args={[0.04, 0.036, 0.1, 20]} />
         <meshStandardMaterial color="#d36b4b" roughness={0.45} />
@@ -150,30 +193,7 @@ function DeskLamp() {
         <sphereGeometry args={[0.03, 16, 12]} />
         <meshBasicMaterial color="#ffd9a0" toneMapped={false} />
       </mesh>
-      <pointLight position={[0.25, 0.32, 0]} intensity={1.6} distance={2.2} decay={2} color="#ffb366" />
-    </group>
-  )
-}
-
-function SmallPlant() {
-  return (
-    <group position={[-0.88, 0, 0.22]}>
-      <mesh position-y={0.05} castShadow>
-        <cylinderGeometry args={[0.055, 0.045, 0.1, 16]} />
-        <meshStandardMaterial color="#e9e2d6" roughness={0.8} />
-      </mesh>
-      {[0, 1, 2, 3, 4, 5].map((i) => (
-        <mesh
-          key={i}
-          position={[Math.cos(i) * 0.03, 0.14, Math.sin(i) * 0.03]}
-          rotation={[Math.sin(i * 2) * 0.5, i, Math.cos(i * 3) * 0.5]}
-          scale={[0.035, 0.08, 0.035]}
-          castShadow
-        >
-          <sphereGeometry args={[1, 8, 6]} />
-          <meshStandardMaterial color="#5f8f4e" roughness={0.7} />
-        </mesh>
-      ))}
+      <pointLight position={[0.25, 0.32, 0]} intensity={0.9} distance={1.8} decay={2} color="#ffb366" />
     </group>
   )
 }

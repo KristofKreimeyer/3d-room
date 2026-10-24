@@ -185,44 +185,49 @@ export function whiteboardTexture() {
   return toTexture(c)
 }
 
-// Abendhimmel für das Fenster.
+// Blick vom Balkon: warmer Nachmittagshimmel, Baumkronen und ein Dach in der Ferne.
 export function skyTexture() {
-  const [c, ctx] = canvas(256, 256)
-  const g = ctx.createLinearGradient(0, 0, 0, 256)
-  g.addColorStop(0, '#7fa6d6')
-  g.addColorStop(0.6, '#f3c58f')
-  g.addColorStop(1, '#f19a6b')
-  ctx.fillStyle = g
-  ctx.fillRect(0, 0, 256, 256)
-  // Silhouette von Bäumen
   const rand = seeded(11)
-  ctx.fillStyle = 'rgba(70,60,70,0.55)'
-  for (let i = 0; i < 9; i++) {
+  const [c, ctx] = canvas(512, 256)
+  const g = ctx.createLinearGradient(0, 0, 0, 256)
+  g.addColorStop(0, '#a9c8e4')
+  g.addColorStop(1, '#f6dfb8')
+  ctx.fillStyle = g
+  ctx.fillRect(0, 0, 512, 256)
+  ctx.fillStyle = '#9b4f3c'
+  ctx.fillRect(140, 190, 240, 70)
+  const greens = ['#7fa54a', '#9cbc58', '#6a9140', '#b7cf6a', '#c9b84f']
+  for (let i = 0; i < 140; i++) {
+    ctx.fillStyle = greens[Math.floor(rand() * greens.length)]
+    ctx.globalAlpha = 0.75
+    const x = rand() * 512
+    const y = 20 + rand() * 170 + (Math.abs(x - 256) < 120 ? 20 : -20)
     ctx.beginPath()
-    ctx.arc(i * 32 + rand() * 10, 250, 30 + rand() * 25, 0, Math.PI * 2)
+    ctx.arc(x, y, 12 + rand() * 26, 0, Math.PI * 2)
     ctx.fill()
   }
+  ctx.globalAlpha = 1
   return toTexture(c)
 }
 
-// Abstrakte Bilder für die Rahmen.
-export function artTexture(seed: number) {
-  const rand = seeded(seed)
-  const [c, ctx] = canvas(256, 320)
-  ctx.fillStyle = '#f4ece1'
-  ctx.fillRect(0, 0, 256, 320)
-  const palette = ['#d98b5f', '#2f4858', '#86a397', '#e9c46a', '#a45a52']
-  for (let i = 0; i < 5; i++) {
-    ctx.fillStyle = palette[Math.floor(rand() * palette.length)]
-    ctx.globalAlpha = 0.9
-    if (rand() > 0.5) {
+// Fotocollage: neun Bilder in Graustufen und warmen Tönen, bewusst abstrakt.
+export function collageTexture() {
+  const rand = seeded(5)
+  const [c, ctx] = canvas(288, 368)
+  ctx.fillStyle = '#f7f3ec'
+  ctx.fillRect(0, 0, 288, 368)
+  const tones = ['#5b5b5b', '#8a8a8a', '#b9a58f', '#7a6a5c', '#a7b3ba', '#c9b28f']
+  for (let r = 0; r < 3; r++) {
+    for (let col = 0; col < 3; col++) {
+      const x = 16 + col * 90 + rand() * 6
+      const y = 16 + r * 116 + rand() * 6
+      ctx.fillStyle = tones[Math.floor(rand() * tones.length)]
+      ctx.fillRect(x, y, 76, 100)
+      ctx.fillStyle = 'rgba(255,255,255,0.25)'
       ctx.beginPath()
-      ctx.arc(40 + rand() * 176, 40 + rand() * 240, 25 + rand() * 50, 0, Math.PI * 2)
+      ctx.arc(x + 38, y + 44, 18, 0, Math.PI * 2)
       ctx.fill()
-    } else {
-      ctx.fillRect(rand() * 180, rand() * 240, 40 + rand() * 80, 30 + rand() * 90)
     }
   }
-  ctx.globalAlpha = 1
   return toTexture(c)
 }
