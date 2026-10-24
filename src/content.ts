@@ -42,20 +42,20 @@ export const projects: Project[] = [
     summary:
       'Eine Seite, die die besten Energy-Drink-Angebote findet und übersichtlich nebeneinanderstellt. Umgesetzt mit React und Tailwind.',
     tags: ['React', 'Tailwind CSS'],
-    links: [], // TODO: Link zur Seite oder zum Code
+    links: [{ label: 'Zur Seite', href: 'https://energyhunt.pages.dev/' }],
   },
   {
     title: 'Retro-Konsole als Website',
     summary: 'Eine Retro-Spielkonsole, die als interaktive Website im Browser läuft. Umgesetzt mit React und Tailwind.',
     tags: ['React', 'Tailwind CSS'],
-    links: [], // TODO: Link zur Seite oder zum Code
+    links: [{ label: 'Zur Seite', href: 'https://kristof-kreimeyer.de/' }],
   },
 ]
 
 export const skills: SkillGroup[] = [
-  { name: 'Frontend', items: ['React', 'Tailwind CSS', 'TypeScript', 'Three.js'] },
-  { name: 'Werkzeuge', items: ['Git', 'Vite', 'TODO'] },
-  { name: 'Weitere Stärken', items: ['TODO'] },
+  { name: 'Frontend', items: ['React', 'TypeScript', 'Vue', 'HTML/CSS', 'Tailwind CSS', 'Three.js'] },
+  { name: 'Accessibility', items: ['Barrierefreiheit', 'UX/UI Thinking'] },
+  { name: 'Werkzeuge', items: ['Git / GitHub', 'Storybook', 'Agile / Scrum', 'Figma', 'Vite'] },
 ]
 
 export const about = [
