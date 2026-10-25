@@ -77,6 +77,37 @@ def make_diffuse_from_unlit(mat, roughness=0.65):
     nt.links.new(bsdf.outputs['BSDF'], out.inputs['Surface'])
 
 
+def is_floor(mat):
+    """Der Boden ist das einzige Material mit der dunklen Holzfarbe #6a4a35 (linear etwa 0.144, 0.069, 0.036)."""
+    bsdf = next((n for n in mat.node_tree.nodes if n.bl_idname == 'ShaderNodeBsdfPrincipled'), None)
+    if not bsdf or bsdf.inputs['Base Color'].is_linked:
+        return False
+    r, g, b = bsdf.inputs['Base Color'].default_value[:3]
+    return abs(r - 0.144) < 0.01 and abs(g - 0.069) < 0.01 and abs(b - 0.036) < 0.01
+
+
+def make_floor(mat):
+    """Dunkle Fliesen mit hellen Fugen und leichtem Glanz, wie im Vorbild-Screenshot."""
+    nt = mat.node_tree
+    bsdf = next(n for n in nt.nodes if n.bl_idname == 'ShaderNodeBsdfPrincipled')
+    coord = nt.nodes.new('ShaderNodeNewGeometry')
+    brick = nt.nodes.new('ShaderNodeTexBrick')
+    brick.offset = 0.5
+    brick.inputs['Scale'].default_value = 1.0
+    brick.inputs['Color1'].default_value = (0.062, 0.030, 0.017, 1)
+    brick.inputs['Color2'].default_value = (0.048, 0.022, 0.012, 1)
+    brick.inputs['Mortar'].default_value = (0.20, 0.13, 0.085, 1)
+    brick.inputs['Mortar Size'].default_value = 0.012
+    brick.inputs['Mortar Smooth'].default_value = 0.1
+    brick.inputs['Bias'].default_value = 0.0
+    brick.inputs['Brick Width'].default_value = 0.9
+    brick.inputs['Row Height'].default_value = 0.6
+    nt.links.new(coord.outputs['Position'], brick.inputs['Vector'])
+    nt.links.new(brick.outputs['Color'], bsdf.inputs['Base Color'])
+    bsdf.inputs['Roughness'].default_value = 0.28
+    bsdf.inputs['Metallic'].default_value = 0.0
+
+
 def add_bevel(mat, radius=0.008):
     nt = mat.node_tree
     bsdf = next((n for n in nt.nodes if n.bl_idname == 'ShaderNodeBsdfPrincipled'), None)
@@ -100,6 +131,8 @@ def convert_materials(emission):
                 continue
             done.add(mat.name)
             if not is_unlit(mat):
+                if is_floor(mat):
+                    make_floor(mat)
                 add_bevel(mat)
                 continue
             img, color = unlit_info(mat)
