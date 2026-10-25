@@ -1,4 +1,5 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
+import { SceneBoundary } from './components/SceneBoundary'
 import { QuickView } from './components/QuickView'
 import { TopBar, type View } from './components/TopBar'
 
@@ -23,8 +24,11 @@ function initialView(canShow3d: boolean): View {
 }
 
 export default function App() {
-  const [canShow3d] = useState(supportsWebGL)
-  const [view, setView] = useState<View>(() => initialView(canShow3d))
+  const [webgl] = useState(supportsWebGL)
+  const [failed, setFailed] = useState(false)
+  const canShow3d = webgl && !failed
+  const [chosen, setView] = useState<View>(() => initialView(webgl))
+  const view = canShow3d ? chosen : 'liste'
 
   useEffect(() => {
     if (view === 'liste' && window.location.hash) {
@@ -36,14 +40,18 @@ export default function App() {
     <>
       <TopBar view={view} canShow3d={canShow3d} onViewChange={setView} />
       {view === '3d' ? (
-        <Suspense fallback={(
-            <div className="scene__loading" role="status">
-              <span className="scene__spinner" aria-hidden="true" />
-              Raum wird geladen …
-            </div>
-          )}>
-          <RoomScene />
-        </Suspense>
+        <SceneBoundary onError={() => setFailed(true)}>
+          <Suspense
+            fallback={
+              <div className="scene__loading" role="status">
+                <span className="scene__spinner" aria-hidden="true" />
+                Raum wird geladen …
+              </div>
+            }
+          >
+            <RoomScene />
+          </Suspense>
+        </SceneBoundary>
       ) : (
         <QuickView />
       )}

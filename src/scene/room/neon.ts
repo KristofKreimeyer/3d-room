@@ -11,7 +11,7 @@ export const NEON = {
 export const DARK = {
   wall: '#d8c3a5',
   wallLight: '#c4ae90',
-  floor: '#3a271d',
+  floor: '#6a4a35',
   metal: '#5b4333',
   black: '#3a281d',
 }
